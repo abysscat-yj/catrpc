@@ -10,4 +10,6 @@ public interface OrderService {
 
 	Order findById(Integer id);
 
+	int getId(int id);
+
 }

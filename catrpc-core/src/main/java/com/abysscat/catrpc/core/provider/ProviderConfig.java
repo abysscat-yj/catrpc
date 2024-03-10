@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 public class ProviderConfig {
 
     @Bean
-    ProviderBootstrap providerBootstrap() {
+    ProviderBootstrap createProviderBootstrap() {
         return new ProviderBootstrap();
     }
 

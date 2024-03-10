@@ -16,6 +16,16 @@ import org.springframework.stereotype.Component;
 public class OrderServiceImpl implements OrderService {
 	@Override
 	public Order findById(Integer id) {
+
+		if(id == 404) {
+			throw new RuntimeException("404 exception");
+		}
+
 		return new Order(id.longValue(), 12.34f);
+	}
+
+	@Override
+	public int getId(int id) {
+		return id;
 	}
 }

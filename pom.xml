@@ -20,6 +20,7 @@
         <module>catrpc-core</module>
         <module>catrpc-demo-api</module>
         <module>catrpc-demo-provider</module>
+        <module>catrpc-demo-consumer</module>
     </modules>
 
     <properties>
