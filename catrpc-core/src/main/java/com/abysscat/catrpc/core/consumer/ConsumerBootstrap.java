@@ -23,6 +23,11 @@ public class ConsumerBootstrap implements ApplicationContextAware {
 
 	ApplicationContext applicationContext;
 
+	/**
+	 * Service Consumers Proxy Map
+	 * key: service interface class canonical name
+	 * value: proxy instance
+	 */
 	private Map<String, Object> stub = new HashMap<>();
 
 	public void start() {
@@ -36,7 +41,7 @@ public class ConsumerBootstrap implements ApplicationContextAware {
 					String serviceName = service.getCanonicalName();
 					Object consumer = stub.get(serviceName);
 					if (consumer == null) {
-						consumer = createConsumer(service);
+						consumer = createConsumerProxyInstance(service);
 					}
 					f.setAccessible(true);
 					f.set(bean, consumer);
@@ -47,7 +52,7 @@ public class ConsumerBootstrap implements ApplicationContextAware {
 		}
 	}
 
-	private Object createConsumer(Class<?> service) {
+	private Object createConsumerProxyInstance(Class<?> service) {
 		return Proxy.newProxyInstance(service.getClassLoader(),
 				new Class[]{service},
 				new CatInvocationHandler(service)

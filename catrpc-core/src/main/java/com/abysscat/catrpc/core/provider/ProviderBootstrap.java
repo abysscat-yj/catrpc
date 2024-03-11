@@ -25,6 +25,11 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     ApplicationContext applicationContext;
 
+    /**
+     * Service Providers Map
+     * key: service interface class canonical name
+     * value: bean instance
+     */
     private Map<String, Object> skeleton = new HashMap<>();
 
     @PostConstruct
