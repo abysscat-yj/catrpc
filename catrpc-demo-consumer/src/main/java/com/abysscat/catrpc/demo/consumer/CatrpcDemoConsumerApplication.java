@@ -35,8 +35,14 @@ public class CatrpcDemoConsumerApplication {
 	@Bean
 	ApplicationRunner consumerRun() {
 		return x -> {
-			User user = userService.findById(1);
-			System.out.println("RPC Result: userService.findById(1): " + user);
+//			User user = userService.findById(1);
+//			System.out.println("RPC Result: userService.findById(1): " + user);
+
+			long userId = userService.getId(11);
+			System.out.println("RPC Result: userService.getId(11): " + userId);
+
+			int userId2 = userService.getId(new User(22, ""));
+			System.out.println("RPC Result: userService.getId(new User(22, \"\")): " + userId2);
 
 			Order order = orderService.findById(1);
 			System.out.println("RPC Result: orderService.findById(1):" + order);

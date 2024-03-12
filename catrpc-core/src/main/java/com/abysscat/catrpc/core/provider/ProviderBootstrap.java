@@ -4,6 +4,7 @@ import com.abysscat.catrpc.core.annotation.CatProvider;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
 import com.abysscat.catrpc.core.utils.MethodUtils;
+import com.alibaba.fastjson.util.TypeUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
@@ -49,8 +50,15 @@ public class ProviderBootstrap implements ApplicationContextAware {
         RpcResponse rpcResponse = new RpcResponse();
         Object bean = skeleton.get(request.getService());
         try {
-            Method method = findMethod(bean.getClass(), request.getMethod());
-            Object result = method.invoke(bean, request.getArgs());
+            Method method = findMethod(bean.getClass(), request.getMethod(), request.getMethodSign());
+            if (method == null) {
+                rpcResponse.setStatus(false);
+                rpcResponse.setEx(new RuntimeException("no such method:" + request.getMethod()));
+                return rpcResponse;
+            }
+            // 由于 request 中的 Object[] args 可能丢失掉基本类型、包装类，所以需要转换
+            Object[] args = castArgsType(request.getArgs(), method.getParameterTypes());
+            Object result = method.invoke(bean, args);
             rpcResponse.setStatus(true);
             rpcResponse.setData(result);
         } catch (InvocationTargetException e) {
@@ -61,6 +69,14 @@ public class ProviderBootstrap implements ApplicationContextAware {
 		return rpcResponse;
     }
 
+    private Object[] castArgsType(Object[] args, Class<?>[] parameterTypes) {
+        Object[] result = new Object[args.length];
+        for (int i = 0; i < args.length; i++) {
+            result[i] = TypeUtils.castToJavaBean(args[i], parameterTypes[i]);
+        }
+        return result;
+    }
+
     private void genInterface(Object x) {
         Class<?>[] interfaces = x.getClass().getInterfaces();
         for (Class<?> anInterface : interfaces) {
@@ -68,9 +84,9 @@ public class ProviderBootstrap implements ApplicationContextAware {
         }
     }
 
-    private Method findMethod(Class<?> aClass, String methodName) {
+    private Method findMethod(Class<?> aClass, String methodName, String methodSign) {
         for (Method method : aClass.getMethods()) {
-            if (method.getName().equals(methodName)) {
+            if (method.getName().equals(methodName) && MethodUtils.getMethodSign(method).equals(methodSign)) {
                 return method;
             }
         }

@@ -15,6 +15,8 @@ public class RpcRequest {
 
     private String method;
 
+    private String methodSign;
+
     private Object[] args;
 
 }

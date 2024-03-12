@@ -2,8 +2,10 @@ package com.abysscat.catrpc.core.consumer;
 
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
+import com.abysscat.catrpc.core.utils.MethodUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.util.TypeUtils;
 import okhttp3.ConnectionPool;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -37,6 +39,7 @@ public class CatInvocationHandler implements InvocationHandler {
 		RpcRequest rpcRequest = new RpcRequest();
 		rpcRequest.setService(service.getCanonicalName());
 		rpcRequest.setMethod(method.getName());
+		rpcRequest.setMethodSign(MethodUtils.getMethodSign(method));
 		rpcRequest.setArgs(args);
 
 		RpcResponse rpcResponse = post(rpcRequest);
@@ -47,7 +50,7 @@ public class CatInvocationHandler implements InvocationHandler {
 				JSONObject jsonObject = (JSONObject) rpcResponse.getData();
 				return jsonObject.toJavaObject(method.getReturnType());
 			} else {
-				return data;
+				return TypeUtils.castToJavaBean(data, method.getReturnType());
 			}
 		} else {
 			Exception ex = rpcResponse.getEx();
@@ -58,9 +61,9 @@ public class CatInvocationHandler implements InvocationHandler {
 
 	OkHttpClient client = new OkHttpClient.Builder()
 			.connectionPool(new ConnectionPool(16, 60, TimeUnit.SECONDS))
-			.readTimeout(1, TimeUnit.SECONDS)
-			.writeTimeout(1, TimeUnit.SECONDS)
-			.connectTimeout(1, TimeUnit.SECONDS)
+			.readTimeout(60, TimeUnit.SECONDS)
+			.writeTimeout(60, TimeUnit.SECONDS)
+			.connectTimeout(60, TimeUnit.SECONDS)
 			.build();
 
 	private RpcResponse post(RpcRequest rpcRequest) {

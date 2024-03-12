@@ -46,8 +46,8 @@ public class CatrpcDemoProviderApplication {
             request.setMethod("findById");
             request.setArgs(new Object[]{123});
 
-            RpcResponse response = invoke(request);
-            System.out.println("return: " + response.getData());
+//            RpcResponse response = invoke(request);
+//            System.out.println("return: " + response.getData());
         };
     }
 

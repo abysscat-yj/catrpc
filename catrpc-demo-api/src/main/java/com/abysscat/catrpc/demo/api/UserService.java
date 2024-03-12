@@ -10,4 +10,8 @@ public interface UserService {
 
     User findById(int id);
 
+    long getId(long id);
+
+    int getId(User user);
+
 }

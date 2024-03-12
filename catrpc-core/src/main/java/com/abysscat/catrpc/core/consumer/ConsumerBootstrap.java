@@ -34,6 +34,21 @@ public class ConsumerBootstrap implements ApplicationContextAware {
 		String[] names = applicationContext.getBeanDefinitionNames();
 		for (String name : names) {
 			Object bean = applicationContext.getBean(name);
+
+			// 过滤掉spring、jdk、其他框架自身的bean
+			String packageName = bean.getClass().getPackageName();
+			if (packageName.startsWith("org.springframework.") ||
+					packageName.startsWith("java.") ||
+					packageName.startsWith("javax.") ||
+					packageName.startsWith("jdk.") ||
+					packageName.startsWith("com.fasterxml.") ||
+					packageName.startsWith("com.sun.") ||
+					packageName.startsWith("jakarta.") ||
+					packageName.startsWith("org.apache.")) {
+				// 降低一半启动耗时
+				continue;
+			}
+
 			List<Field> fields = findAnnotatedField(bean.getClass());
 			fields.forEach(f -> {
 				try {
