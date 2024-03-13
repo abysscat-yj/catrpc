@@ -4,8 +4,18 @@ Content-Type: application/json
 
 {
   "service": "com.abysscat.catrpc.demo.api.UserService",
-  "method": "findById",
+  "methodSign": "bd8865f6f7cf984189f489fa16c34db3",
   "args": [100]
+}
+
+### 获取用户信息
+POST http://localhost:8080/
+Content-Type: application/json
+
+{
+  "service": "com.abysscat.catrpc.demo.api.UserService",
+  "methodSign": "fd6be21ff9e15424ea10347ea5f095af",
+  "args": [100, "yj"]
 }
 
 ### 获取订单信息
@@ -14,7 +24,7 @@ Content-Type: application/json
 
 {
   "service": "com.abysscat.catrpc.demo.api.OrderService",
-  "method": "findById",
+  "methodSign": "e807ca579df5e6b2e0b8b999457e2439",
   "args": [200]
 }
 
@@ -24,6 +34,6 @@ Content-Type: application/json
 
 {
   "service": "com.abysscat.catrpc.demo.api.UserService",
-  "method": "hashCode",
+  "methodSign": "hashCode",
   "args": []
 }

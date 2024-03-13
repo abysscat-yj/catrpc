@@ -20,6 +20,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User findById(int id, String name) {
+        return new User(id, "cat-" + name + System.currentTimeMillis());
+    }
+
+    @Override
     public long getId(long id) {
         return id;
     }
@@ -30,5 +35,20 @@ public class UserServiceImpl implements UserService {
             return 0;
         }
         return user.getId();
+    }
+
+    @Override
+    public int[] getIds() {
+        return new int[]{111, 222, 333};
+    }
+
+    @Override
+    public long[] getLongIds() {
+        return new long[]{111, 222};
+    }
+
+    @Override
+    public int[] getIds(int[] ids) {
+        return ids;
     }
 }

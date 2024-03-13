@@ -12,7 +12,6 @@ import java.lang.reflect.Method;
  */
 public class MethodUtils {
 
-	// TODO 过滤内置方法优化
 	public static boolean checkLocalMethod(final String method) {
 		// 本地方法不代理
 		return "toString".equals(method) ||
@@ -24,12 +23,16 @@ public class MethodUtils {
 				"notify".equals(method);
 	}
 
+	public static boolean checkLocalMethod(final Method method) {
+		return method.getDeclaringClass().equals(Object.class);
+	}
+
 	/**
 	 * 生成方法签名字符串
 	 * @param method 反射 method 对象
 	 * @return method sign string
 	 */
-	public static String getMethodSign(Method method) {
+	public static String getMethodSign(final Method method) {
 		if (method == null) {
 			return "";
 		}
@@ -41,4 +44,5 @@ public class MethodUtils {
 		}
 		return DigestUtils.md5DigestAsHex(builder.toString().getBytes());
 	}
+
 }

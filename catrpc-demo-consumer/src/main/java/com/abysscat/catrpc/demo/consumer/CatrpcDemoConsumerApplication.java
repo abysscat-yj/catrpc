@@ -12,6 +12,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
+import java.util.Arrays;
+
 /**
  * Description
  *
@@ -35,14 +37,26 @@ public class CatrpcDemoConsumerApplication {
 	@Bean
 	ApplicationRunner consumerRun() {
 		return x -> {
-//			User user = userService.findById(1);
-//			System.out.println("RPC Result: userService.findById(1): " + user);
+			User user = userService.findById(1);
+			System.out.println("RPC Result: userService.findById(1): " + user);
+
+			User user2 = userService.findById(1, "yj");
+			System.out.println("RPC Result: userService.findById(1, \"yj\"): " + user2);
 
 			long userId = userService.getId(11);
 			System.out.println("RPC Result: userService.getId(11): " + userId);
 
 			int userId2 = userService.getId(new User(22, ""));
 			System.out.println("RPC Result: userService.getId(new User(22, \"\")): " + userId2);
+
+			int[] ids = userService.getIds();
+			System.out.println("RPC Result: userService.getIds(): " + Arrays.toString(ids));
+
+			int[] ids2 = userService.getIds(new int[]{333, 555});
+			System.out.println("RPC Result: userService.getIds(new int[]{333, 555}): " + Arrays.toString(ids2));
+
+			long[] longIds = userService.getLongIds();
+			System.out.println("RPC Result: userService.getLongIds(): " + Arrays.toString(longIds));
 
 			Order order = orderService.findById(1);
 			System.out.println("RPC Result: orderService.findById(1):" + order);

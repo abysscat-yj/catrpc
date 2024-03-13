@@ -3,9 +3,10 @@ package com.abysscat.catrpc.core.consumer;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
 import com.abysscat.catrpc.core.utils.MethodUtils;
+import com.abysscat.catrpc.core.utils.TypeUtils;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.util.TypeUtils;
 import okhttp3.ConnectionPool;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -13,6 +14,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
@@ -36,9 +38,13 @@ public class CatInvocationHandler implements InvocationHandler {
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
+		// 过滤本地默认方法， 不对外提供反射调用
+		if (MethodUtils.checkLocalMethod(method.getName())) {
+			return null;
+		}
+
 		RpcRequest rpcRequest = new RpcRequest();
 		rpcRequest.setService(service.getCanonicalName());
-		rpcRequest.setMethod(method.getName());
 		rpcRequest.setMethodSign(MethodUtils.getMethodSign(method));
 		rpcRequest.setArgs(args);
 
@@ -46,11 +52,18 @@ public class CatInvocationHandler implements InvocationHandler {
 
 		if (rpcResponse.isStatus()) {
 			Object data = rpcResponse.getData();
-			if (data instanceof JSONObject) {
-				JSONObject jsonObject = (JSONObject) rpcResponse.getData();
-				return jsonObject.toJavaObject(method.getReturnType());
+			if(data instanceof JSONObject jsonResult) {
+				return jsonResult.toJavaObject(method.getReturnType());
+			} else if (data instanceof JSONArray jsonArray) {
+				Object[] array = jsonArray.toArray();
+				Class<?> componentType = method.getReturnType().getComponentType();
+				Object resultArray = Array.newInstance(componentType, array.length);
+				for (int i = 0; i < array.length; i++) {
+					Array.set(resultArray, i, array[i]);
+				}
+				return resultArray;
 			} else {
-				return TypeUtils.castToJavaBean(data, method.getReturnType());
+				return TypeUtils.cast(data, method.getReturnType());
 			}
 		} else {
 			Exception ex = rpcResponse.getEx();

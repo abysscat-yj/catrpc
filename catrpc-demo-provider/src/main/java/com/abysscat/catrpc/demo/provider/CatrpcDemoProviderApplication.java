@@ -43,11 +43,11 @@ public class CatrpcDemoProviderApplication {
         return x -> {
             RpcRequest request = new RpcRequest();
             request.setService("com.abysscat.catrpc.demo.api.UserService");
-            request.setMethod("findById");
+            request.setMethodSign("bd8865f6f7cf984189f489fa16c34db3");
             request.setArgs(new Object[]{123});
 
-//            RpcResponse response = invoke(request);
-//            System.out.println("return: " + response.getData());
+            RpcResponse response = invoke(request);
+            System.out.println("providerRun return: " + response.getData());
         };
     }
 

@@ -10,8 +10,14 @@ public interface UserService {
 
     User findById(int id);
 
+    User findById(int id, String name);
+
     long getId(long id);
 
     int getId(User user);
+
+    int[] getIds();
+    long[] getLongIds();
+    int[] getIds(int[] ids);
 
 }

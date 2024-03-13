@@ -3,17 +3,22 @@ package com.abysscat.catrpc.core.provider;
 import com.abysscat.catrpc.core.annotation.CatProvider;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
+import com.abysscat.catrpc.core.meta.ProviderMeta;
 import com.abysscat.catrpc.core.utils.MethodUtils;
-import com.alibaba.fastjson.util.TypeUtils;
+import com.abysscat.catrpc.core.utils.TypeUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Description
@@ -29,9 +34,9 @@ public class ProviderBootstrap implements ApplicationContextAware {
     /**
      * Service Providers Map
      * key: service interface class canonical name
-     * value: bean instance
+     * value: providerMeta list -> method level
      */
-    private Map<String, Object> skeleton = new HashMap<>();
+    private MultiValueMap<String, ProviderMeta> skeleton = new LinkedMultiValueMap<>();
 
     @PostConstruct
     public void buildProviders() {
@@ -42,21 +47,18 @@ public class ProviderBootstrap implements ApplicationContextAware {
     }
 
     public RpcResponse invoke(RpcRequest request) {
-        // 过滤本地默认方法， 不对外提供反射调用
-        if (MethodUtils.checkLocalMethod(request.getMethod())) {
-            return null;
-        }
-
+        List<ProviderMeta> providerMetas = skeleton.get(request.getService());
         RpcResponse rpcResponse = new RpcResponse();
-        Object bean = skeleton.get(request.getService());
         try {
-            Method method = findMethod(bean.getClass(), request.getMethod(), request.getMethodSign());
-            if (method == null) {
+            ProviderMeta meta = findProviderMeta(providerMetas, request.getMethodSign());
+            if (meta == null) {
                 rpcResponse.setStatus(false);
-                rpcResponse.setEx(new RuntimeException("no such method:" + request.getMethod()));
+                rpcResponse.setEx(new RuntimeException("no such method, request:" + request));
                 return rpcResponse;
             }
-            // 由于 request 中的 Object[] args 可能丢失掉基本类型、包装类，所以需要转换
+            Method method = meta.getMethod();
+            Object bean = meta.getServiceImpl();
+            // 由于 request 中的 Object[] args 可能丢失掉基本类型、包装类、对象类型，所以需要转换
             Object[] args = castArgsType(request.getArgs(), method.getParameterTypes());
             Object result = method.invoke(bean, args);
             rpcResponse.setStatus(true);
@@ -69,10 +71,21 @@ public class ProviderBootstrap implements ApplicationContextAware {
 		return rpcResponse;
     }
 
+    private ProviderMeta findProviderMeta(List<ProviderMeta> providerMetas, String methodSign) {
+        if (CollectionUtils.isEmpty(providerMetas)) {
+            return null;
+        }
+        Optional<ProviderMeta> providerMeta = providerMetas.stream()
+                .filter(x -> x.getMethodSign().equals(methodSign))
+                .findFirst();
+        return providerMeta.orElse(null);
+    }
+
     private Object[] castArgsType(Object[] args, Class<?>[] parameterTypes) {
+        if(args == null || args.length == 0) return args;
         Object[] result = new Object[args.length];
         for (int i = 0; i < args.length; i++) {
-            result[i] = TypeUtils.castToJavaBean(args[i], parameterTypes[i]);
+            result[i] = TypeUtils.cast(args[i], parameterTypes[i]);
         }
         return result;
     }
@@ -80,17 +93,23 @@ public class ProviderBootstrap implements ApplicationContextAware {
     private void genInterface(Object x) {
         Class<?>[] interfaces = x.getClass().getInterfaces();
         for (Class<?> anInterface : interfaces) {
-            skeleton.put(anInterface.getCanonicalName(), x);
+            Method[] methods = anInterface.getMethods();
+            for (Method method : methods) {
+                if (MethodUtils.checkLocalMethod(method)) {
+                    continue;
+                }
+                createProvider(anInterface, x, method);
+            }
         }
     }
 
-    private Method findMethod(Class<?> aClass, String methodName, String methodSign) {
-        for (Method method : aClass.getMethods()) {
-            if (method.getName().equals(methodName) && MethodUtils.getMethodSign(method).equals(methodSign)) {
-                return method;
-            }
-        }
-        return null;
+    private void createProvider(Class<?> anInterface, Object x, Method method) {
+        ProviderMeta meta = new ProviderMeta();
+        meta.setMethod(method);
+        meta.setMethodSign(MethodUtils.getMethodSign(method));
+        meta.setServiceImpl(x);
+        System.out.println("createProvider meta:" + meta);
+        skeleton.add(anInterface.getCanonicalName(), meta);
     }
 
 }
