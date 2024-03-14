@@ -39,6 +39,10 @@ public class TypeUtils {
 			return jsonObject.toJavaObject(type);
 		}
 
+		if (origin instanceof JSONObject jsonObject) {
+			return jsonObject.toJavaObject(type);
+		}
+
 		if(type.equals(Integer.class) || type.equals(Integer.TYPE)) {
 			return Integer.valueOf(origin.toString());
 		} else if(type.equals(Long.class) || type.equals(Long.TYPE)) {

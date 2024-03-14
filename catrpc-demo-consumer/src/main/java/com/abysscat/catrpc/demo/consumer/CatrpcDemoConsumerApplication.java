@@ -2,7 +2,6 @@ package com.abysscat.catrpc.demo.consumer;
 
 import com.abysscat.catrpc.core.annotation.CatConsumer;
 import com.abysscat.catrpc.core.consumer.ConsumerConfig;
-import com.abysscat.catrpc.demo.api.Order;
 import com.abysscat.catrpc.demo.api.OrderService;
 import com.abysscat.catrpc.demo.api.User;
 import com.abysscat.catrpc.demo.api.UserService;
@@ -13,6 +12,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Description
@@ -58,14 +59,26 @@ public class CatrpcDemoConsumerApplication {
 			long[] longIds = userService.getLongIds();
 			System.out.println("RPC Result: userService.getLongIds(): " + Arrays.toString(longIds));
 
-			Order order = orderService.findById(1);
-			System.out.println("RPC Result: orderService.findById(1):" + order);
+			List<User> list = userService.getList(Arrays.asList(new User(1, "yy"), new User(2, "jj")));
+			System.out.println("RPC Result: userService.getList(Arrays.asList(new User(1, \"yy\"), new User(2, \"jj\"))): " + list);
+
+			List<User> list2 = userService.getList(null);
+			System.out.println("RPC Result: userService.getList(null): " + list2);
+
+			List<Integer> idList = userService.getIdList(Arrays.asList(new User(11, ""), new User(22, "")));
+			System.out.println("RPC Result: userService.getIdList(Arrays.asList(new User(11, \"\"), new User(22, \"\")): " + idList);
+
+			Map<String, User> map = userService.getMap(Map.of("cc", new User(1, "111")));
+			System.out.println("RPC Result: userService.getMap(Map.of(\"cc\", new User(1, \"111\"))): " + map);
+
+//			Order order = orderService.findById(1);
+//			System.out.println("RPC Result: orderService.findById(1):" + order);
 
 //			Order order404 = orderService.findById(404);
 //			System.out.println("RPC Result: orderService.findById(404):" + order404);
 
-			int id = orderService.getId(1);
-			System.out.println("RPC Result: orderService.getId(1):" + id);
+//			int id = orderService.getId(1);
+//			System.out.println("RPC Result: orderService.getId(1):" + id);
 		};
 	}
 }

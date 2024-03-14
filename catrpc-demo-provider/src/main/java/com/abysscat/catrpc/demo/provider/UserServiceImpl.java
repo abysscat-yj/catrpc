@@ -4,6 +4,10 @@ import com.abysscat.catrpc.core.annotation.CatProvider;
 import com.abysscat.catrpc.demo.api.User;
 import com.abysscat.catrpc.demo.api.UserService;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Description
@@ -50,5 +54,23 @@ public class UserServiceImpl implements UserService {
     @Override
     public int[] getIds(int[] ids) {
         return ids;
+    }
+
+    @Override
+    public List<User> getList(List<User> userList) {
+        return userList;
+    }
+
+    @Override
+    public List<Integer> getIdList(List<User> userList) {
+        if (CollectionUtils.isEmpty(userList)) {
+            return null;
+        }
+        return userList.stream().map(User::getId).toList();
+    }
+
+    @Override
+    public Map<String, User> getMap(Map<String, User> userMap) {
+        return userMap;
     }
 }
