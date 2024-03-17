@@ -1,5 +1,6 @@
 package com.abysscat.catrpc.core.consumer;
 
+import com.abysscat.catrpc.core.api.RpcContext;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
 import com.abysscat.catrpc.core.utils.MethodUtils;
@@ -37,9 +38,13 @@ public class CatInvocationHandler implements InvocationHandler {
 	final static MediaType JSON_TYPE = MediaType.get("application/json; charset=utf-8");
 
 	Class<?> service;
+	RpcContext context;
+	List<String> providers;
 
-	public CatInvocationHandler(Class<?> clazz) {
+	public CatInvocationHandler(Class<?> clazz, RpcContext context, List<String> providers) {
 		this.service = clazz;
+		this.context = context;
+		this.providers = providers;
 	}
 
 	@Override
@@ -55,7 +60,12 @@ public class CatInvocationHandler implements InvocationHandler {
 		rpcRequest.setMethodSign(MethodUtils.getMethodSign(method));
 		rpcRequest.setArgs(args);
 
-		RpcResponse rpcResponse = post(rpcRequest);
+		List<String> urls = context.getRouter().route(providers);
+		String url = (String) context.getLoadBalancer().choose(urls);
+
+		System.out.println("CatInvocationHandler loadBalancer.choose url: " + url);
+
+		RpcResponse rpcResponse = post(rpcRequest, url);
 
 		if (rpcResponse.isStatus()) {
 			Object data = rpcResponse.getData();
@@ -119,10 +129,10 @@ public class CatInvocationHandler implements InvocationHandler {
 			.connectTimeout(60, TimeUnit.SECONDS)
 			.build();
 
-	private RpcResponse post(RpcRequest rpcRequest) {
+	private RpcResponse post(RpcRequest rpcRequest, String url) {
 		String reqJson = JSON.toJSONString(rpcRequest);
 		Request request = new Request.Builder()
-				.url("http://localhost:8080/")
+				.url(url)
 				.post(RequestBody.create(reqJson, JSON_TYPE))
 				.build();
 		try {

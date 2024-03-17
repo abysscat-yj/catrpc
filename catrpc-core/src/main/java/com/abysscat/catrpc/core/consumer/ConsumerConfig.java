@@ -1,5 +1,8 @@
 package com.abysscat.catrpc.core.consumer;
 
+import com.abysscat.catrpc.core.api.LoadBalancer;
+import com.abysscat.catrpc.core.api.Router;
+import com.abysscat.catrpc.core.cluster.RoundRobinBalancer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +29,18 @@ public class ConsumerConfig {
 		return x -> {
 			consumerBootstrap.start();
 		};
+	}
+
+	@Bean
+	public LoadBalancer<?> loadBalancer() {
+//		return LoadBalancer.Default;
+//		return new RandomLoadBalancer();
+		return new RoundRobinBalancer<>();
+	}
+
+	@Bean
+	public Router<?> router() {
+		return Router.Default;
 	}
 
 }

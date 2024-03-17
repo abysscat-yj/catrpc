@@ -3,6 +3,8 @@ package com.abysscat.catrpc.demo.provider;
 import com.abysscat.catrpc.core.annotation.CatProvider;
 import com.abysscat.catrpc.demo.api.User;
 import com.abysscat.catrpc.demo.api.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -18,9 +20,13 @@ import java.util.Map;
 @Component
 @CatProvider
 public class UserServiceImpl implements UserService {
+
+    @Autowired
+    Environment environment;
+
     @Override
     public User findById(int id) {
-        return new User(id, "cat-" + System.currentTimeMillis());
+        return new User(id, "cat-" +  environment.getProperty("server.port") + "-" + System.currentTimeMillis());
     }
 
     @Override

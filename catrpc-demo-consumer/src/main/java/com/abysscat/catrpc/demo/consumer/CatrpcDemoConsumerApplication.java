@@ -10,6 +10,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +24,7 @@ import java.util.Map;
  * @Create: 2024/3/10 22:33
  */
 @SpringBootApplication
+@RestController
 @Import({ConsumerConfig.class})
 public class CatrpcDemoConsumerApplication {
 
@@ -33,6 +36,11 @@ public class CatrpcDemoConsumerApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(CatrpcDemoConsumerApplication.class, args);
+	}
+
+	@RequestMapping("/")
+	public User invoke(int id) {
+		return userService.findById(id);
 	}
 
 	@Bean
