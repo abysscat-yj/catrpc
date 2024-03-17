@@ -1,13 +1,17 @@
 package com.abysscat.catrpc.core.consumer;
 
 import com.abysscat.catrpc.core.api.LoadBalancer;
+import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.api.Router;
 import com.abysscat.catrpc.core.cluster.RoundRobinBalancer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+
+import java.util.List;
 
 /**
  * Description
@@ -17,6 +21,10 @@ import org.springframework.core.annotation.Order;
  */
 @Configuration
 public class ConsumerConfig {
+
+	@Value("${catrpc.providers}")
+	String providers;
+
 
     @Bean
 	ConsumerBootstrap createConsumerBootstrap() {
@@ -41,6 +49,11 @@ public class ConsumerConfig {
 	@Bean
 	public Router<?> router() {
 		return Router.Default;
+	}
+
+	@Bean(initMethod = "start", destroyMethod = "stop")
+	public RegistryCenter consumerRC() {
+		return new RegistryCenter.StaticRegistryCenter(List.of(providers.split(",")));
 	}
 
 }

@@ -2,6 +2,7 @@ package com.abysscat.catrpc.core.consumer;
 
 import com.abysscat.catrpc.core.annotation.CatConsumer;
 import com.abysscat.catrpc.core.api.LoadBalancer;
+import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.api.Router;
 import com.abysscat.catrpc.core.api.RpcContext;
 import lombok.Data;
@@ -9,7 +10,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
-import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
@@ -46,12 +46,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 		context.setRouter(router);
 		context.setLoadBalancer(loadBalancer);
 
-		String urls = environment.getProperty("catrpc.providers", "");
-		if (!StringUtils.hasLength(urls)) {
-			System.out.println("catrpc.providers is empty.");
-			return;
-		}
-		List<String> providers = List.of(urls.split(","));
+		RegistryCenter registryCenter = applicationContext.getBean(RegistryCenter.class);
 
 		String[] names = applicationContext.getBeanDefinitionNames();
 		for (String name : names) {
@@ -78,7 +73,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 					String serviceName = service.getCanonicalName();
 					Object consumer = stub.get(serviceName);
 					if (consumer == null) {
-						consumer = createConsumerProxyInstance(service, context, providers);
+						consumer = createConsumerFromRegistry(service, context, registryCenter);
 					}
 					f.setAccessible(true);
 					f.set(bean, consumer);
@@ -87,6 +82,12 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 				}
 			});
 		}
+	}
+
+	private Object createConsumerFromRegistry(Class<?> service, RpcContext context, RegistryCenter registryCenter) {
+		String serviceName = service.getCanonicalName();
+		List<String> providers = registryCenter.fetchAll(serviceName);
+		return createConsumerProxyInstance(service, context, providers);
 	}
 
 	private Object createConsumerProxyInstance(Class<?> service, RpcContext context, List<String> providers) {
