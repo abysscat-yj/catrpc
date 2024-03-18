@@ -1,5 +1,7 @@
 package com.abysscat.catrpc.core.api;
 
+import com.abysscat.catrpc.core.registry.ChangedListener;
+
 import java.util.List;
 
 /**
@@ -21,7 +23,7 @@ public interface RegistryCenter {
 
 	// consumer侧
 	List<String> fetchAll(String service);
-	// void subscribe();
+	 void subscribe(String service, ChangedListener listener);
 
 	class StaticRegistryCenter implements RegistryCenter {
 
@@ -54,6 +56,11 @@ public interface RegistryCenter {
 		@Override
 		public List<String> fetchAll(String service) {
 			return providers;
+		}
+
+		@Override
+		public void subscribe(String service, ChangedListener listener) {
+
 		}
 	}
 

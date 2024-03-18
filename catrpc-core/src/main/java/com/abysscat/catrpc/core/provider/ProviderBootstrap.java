@@ -1,13 +1,17 @@
 package com.abysscat.catrpc.core.provider;
 
 import com.abysscat.catrpc.core.annotation.CatProvider;
+import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
 import com.abysscat.catrpc.core.meta.ProviderMeta;
 import com.abysscat.catrpc.core.utils.MethodUtils;
 import com.abysscat.catrpc.core.utils.TypeUtils;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.Data;
+import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.CollectionUtils;
@@ -18,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,12 +46,41 @@ public class ProviderBootstrap implements ApplicationContextAware {
      */
     private MultiValueMap<String, ProviderMeta> skeleton = new LinkedMultiValueMap<>();
 
+    @Value("${server.port}")
+    private String port;
+
+    private String instance;
+
     @PostConstruct
-    public void buildProviders() {
+    public void init() {
         Map<String, Object> providers = applicationContext.getBeansWithAnnotation(CatProvider.class);
         providers.forEach((x, y) -> System.out.println(x));
 
         providers.values().forEach(this::genInterface);
+    }
+
+    @SneakyThrows
+    public void start() {
+        String ip = InetAddress.getLocalHost().getHostAddress();
+        instance = ip + "_" + port;
+        // 将服务注册到注册中心
+        // 注：得保证服务注册到注册中心时，spring上下文已经初始化完成，才能对外暴露服务
+        skeleton.keySet().forEach(this::registerService);
+    }
+
+    @PreDestroy
+    public void stop() {
+        skeleton.keySet().forEach(this::unregisterService);
+    }
+
+    private void registerService(String service) {
+        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
+        rc.register(service, instance);
+    }
+
+    private void unregisterService(String service) {
+        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
+        rc.unregister(service, instance);
     }
 
     public RpcResponse invoke(RpcRequest request) {
@@ -126,7 +160,6 @@ public class ProviderBootstrap implements ApplicationContextAware {
         meta.setMethod(method);
         meta.setMethodSign(MethodUtils.getMethodSign(method));
         meta.setServiceImpl(x);
-        System.out.println("createProvider meta:" + meta);
         skeleton.add(anInterface.getCanonicalName(), meta);
     }
 

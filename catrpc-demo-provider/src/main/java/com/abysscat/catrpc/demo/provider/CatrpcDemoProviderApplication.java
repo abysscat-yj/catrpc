@@ -3,6 +3,7 @@ package com.abysscat.catrpc.demo.provider;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
 import com.abysscat.catrpc.core.provider.ProviderBootstrap;
+import com.abysscat.catrpc.core.provider.ProviderConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @SpringBootApplication
 @RestController
-@Import({ProviderBootstrap.class})
+@Import({ProviderConfig.class})
 public class CatrpcDemoProviderApplication {
 
     public static void main(String[] args) {

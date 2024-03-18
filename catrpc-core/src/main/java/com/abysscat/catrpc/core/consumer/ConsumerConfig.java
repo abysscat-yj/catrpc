@@ -4,14 +4,13 @@ import com.abysscat.catrpc.core.api.LoadBalancer;
 import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.api.Router;
 import com.abysscat.catrpc.core.cluster.RoundRobinBalancer;
+import com.abysscat.catrpc.core.registry.ZkRegistryCenter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-
-import java.util.List;
 
 /**
  * Description
@@ -53,7 +52,7 @@ public class ConsumerConfig {
 
 	@Bean(initMethod = "start", destroyMethod = "stop")
 	public RegistryCenter consumerRC() {
-		return new RegistryCenter.StaticRegistryCenter(List.of(providers.split(",")));
+		return new ZkRegistryCenter();
 	}
 
 }
