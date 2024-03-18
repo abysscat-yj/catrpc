@@ -79,4 +79,9 @@ public class UserServiceImpl implements UserService {
     public Map<String, User> getMap(Map<String, User> userMap) {
         return userMap;
     }
+
+    @Override
+    public User[] getUsers(User[] users) {
+        return users;
+    }
 }

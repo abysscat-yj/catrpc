@@ -79,6 +79,9 @@ public class CatrpcDemoConsumerApplication {
 			Map<String, User> map = userService.getMap(Map.of("cc", new User(1, "111")));
 			System.out.println("RPC Result: userService.getMap(Map.of(\"cc\", new User(1, \"111\"))): " + map);
 
+			User[] users = userService.getUsers(new User[]{new User(11, "11")});
+			System.out.println("RPC Result: userService.getUsers(new User[]{new User(11, \"11\")}): " + Arrays.toString(users));
+
 //			Order order = orderService.findById(1);
 //			System.out.println("RPC Result: orderService.findById(1):" + order);
 

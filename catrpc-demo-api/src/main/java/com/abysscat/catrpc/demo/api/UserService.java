@@ -29,4 +29,6 @@ public interface UserService {
 
     Map<String, User> getMap(Map<String, User> userMap);
 
+    User[] getUsers(User[] users);
+
 }
