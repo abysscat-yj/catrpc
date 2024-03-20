@@ -46,6 +46,9 @@ public class ProviderBootstrap implements ApplicationContextAware {
      */
     private MultiValueMap<String, ProviderMeta> skeleton = new LinkedMultiValueMap<>();
 
+    RegistryCenter rc;
+
+
     @Value("${server.port}")
     private String port;
 
@@ -53,10 +56,13 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     @PostConstruct
     public void init() {
+        rc = applicationContext.getBean(RegistryCenter.class);
+
         Map<String, Object> providers = applicationContext.getBeansWithAnnotation(CatProvider.class);
         providers.forEach((x, y) -> System.out.println(x));
 
         providers.values().forEach(this::genInterface);
+
     }
 
     @SneakyThrows
@@ -65,21 +71,21 @@ public class ProviderBootstrap implements ApplicationContextAware {
         instance = ip + "_" + port;
         // 将服务注册到注册中心
         // 注：得保证服务注册到注册中心时，spring上下文已经初始化完成，才能对外暴露服务
+        rc.start();
         skeleton.keySet().forEach(this::registerService);
     }
 
     @PreDestroy
     public void stop() {
         skeleton.keySet().forEach(this::unregisterService);
+        rc.stop();
     }
 
     private void registerService(String service) {
-        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
         rc.register(service, instance);
     }
 
     private void unregisterService(String service) {
-        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
         rc.unregister(service, instance);
     }
 
