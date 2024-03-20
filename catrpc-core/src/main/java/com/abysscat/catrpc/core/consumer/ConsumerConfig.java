@@ -4,7 +4,8 @@ import com.abysscat.catrpc.core.api.LoadBalancer;
 import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.api.Router;
 import com.abysscat.catrpc.core.cluster.RoundRobinBalancer;
-import com.abysscat.catrpc.core.registry.ZkRegistryCenter;
+import com.abysscat.catrpc.core.meta.InstanceMeta;
+import com.abysscat.catrpc.core.registry.zk.ZkRegistryCenter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
@@ -39,14 +40,14 @@ public class ConsumerConfig {
 	}
 
 	@Bean
-	public LoadBalancer<?> loadBalancer() {
+	public LoadBalancer<InstanceMeta> loadBalancer() {
 //		return LoadBalancer.Default;
 //		return new RandomLoadBalancer();
 		return new RoundRobinBalancer<>();
 	}
 
 	@Bean
-	public Router<?> router() {
+	public Router<InstanceMeta> router() {
 		return Router.Default;
 	}
 

@@ -54,8 +54,8 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
 	public void start() {
 
-		Router router = applicationContext.getBean(Router.class);
-		LoadBalancer loadBalancer = applicationContext.getBean(LoadBalancer.class);
+		Router<InstanceMeta> router = applicationContext.getBean(Router.class);
+		LoadBalancer<InstanceMeta> loadBalancer = applicationContext.getBean(LoadBalancer.class);
 
 		RpcContext context = new RpcContext();
 		context.setRouter(router);
@@ -68,15 +68,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 			Object bean = applicationContext.getBean(name);
 
 			// 过滤掉spring、jdk、其他框架自身的bean
-			String packageName = bean.getClass().getPackageName();
-			if (packageName.startsWith("org.springframework.") ||
-					packageName.startsWith("java.") ||
-					packageName.startsWith("javax.") ||
-					packageName.startsWith("jdk.") ||
-					packageName.startsWith("com.fasterxml.") ||
-					packageName.startsWith("com.sun.") ||
-					packageName.startsWith("jakarta.") ||
-					packageName.startsWith("org.apache.")) {
+			if (isExternalPackage(bean.getClass().getPackageName())) {
 				// 降低一半启动耗时
 				continue;
 			}
@@ -98,6 +90,17 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 				}
 			});
 		}
+	}
+
+	private static boolean isExternalPackage(String packageName) {
+		return packageName.startsWith("org.springframework.") ||
+				packageName.startsWith("java.") ||
+				packageName.startsWith("javax.") ||
+				packageName.startsWith("jdk.") ||
+				packageName.startsWith("com.fasterxml.") ||
+				packageName.startsWith("com.sun.") ||
+				packageName.startsWith("jakarta.") ||
+				packageName.startsWith("org.apache.");
 	}
 
 	private Object createConsumerFromRegistry(Class<?> service, RpcContext context, RegistryCenter registryCenter) {
