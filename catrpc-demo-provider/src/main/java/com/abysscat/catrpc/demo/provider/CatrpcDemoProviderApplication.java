@@ -2,8 +2,8 @@ package com.abysscat.catrpc.demo.provider;
 
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
-import com.abysscat.catrpc.core.provider.ProviderBootstrap;
 import com.abysscat.catrpc.core.provider.ProviderConfig;
+import com.abysscat.catrpc.core.provider.ProviderInvoker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -32,11 +32,11 @@ public class CatrpcDemoProviderApplication {
     // 使用HTTP + JSON 来实现序列化和通信
 
     @Autowired
-    ProviderBootstrap providerBootstrap;
+    ProviderInvoker providerInvoker;
 
     @RequestMapping("/")
-    public RpcResponse invoke(@RequestBody RpcRequest request) {
-        return providerBootstrap.invoke(request);
+    public RpcResponse<Object> invoke(@RequestBody RpcRequest request) {
+        return providerInvoker.invoke(request);
     }
 
     @Bean
@@ -47,7 +47,7 @@ public class CatrpcDemoProviderApplication {
             request.setMethodSign("bd8865f6f7cf984189f489fa16c34db3");
             request.setArgs(new Object[]{123});
 
-            RpcResponse response = invoke(request);
+            RpcResponse<Object> response = invoke(request);
             System.out.println("providerRun return: " + response.getData());
         };
     }
