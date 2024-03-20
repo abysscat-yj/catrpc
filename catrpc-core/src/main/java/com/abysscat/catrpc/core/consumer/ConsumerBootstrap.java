@@ -5,6 +5,7 @@ import com.abysscat.catrpc.core.api.LoadBalancer;
 import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.api.Router;
 import com.abysscat.catrpc.core.api.RpcContext;
+import com.abysscat.catrpc.core.utils.FieldUtils;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -13,14 +14,13 @@ import org.springframework.core.env.Environment;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Description
+ * 消费者启动类
  *
  * @Author: abysscat-yj
  * @Create: 2024/3/10 22:50
@@ -67,7 +67,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 				continue;
 			}
 
-			List<Field> fields = findAnnotatedField(bean.getClass());
+			List<Field> fields = FieldUtils.findAnnotatedField(bean.getClass(), CatConsumer.class);
 			fields.forEach(f -> {
 				try {
 					Class<?> service = f.getType();
@@ -112,19 +112,4 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 		);
 	}
 
-	private List<Field> findAnnotatedField(Class<?> aClass) {
-		List<Field> result = new ArrayList<>();
-		while (aClass != null) {
-			Field[] fields = aClass.getDeclaredFields();
-			for (Field field : fields) {
-				if (field.isAnnotationPresent(CatConsumer.class)) {
-					result.add(field);
-				}
-			}
-			// 由于容器里的CatrpcDemoConsumerApplication类是被SpringCGlib代理过的子类，所以默认拿不到userService field
-			aClass = aClass.getSuperclass();
-		}
-
-		return result;
-	}
 }
