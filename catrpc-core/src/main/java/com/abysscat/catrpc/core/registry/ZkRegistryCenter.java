@@ -1,6 +1,7 @@
 package com.abysscat.catrpc.core.registry;
 
 import com.abysscat.catrpc.core.api.RegistryCenter;
+import com.abysscat.catrpc.core.meta.InstanceMeta;
 import lombok.SneakyThrows;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -10,6 +11,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Description
@@ -41,7 +43,7 @@ public class ZkRegistryCenter implements RegistryCenter {
 
 	@SneakyThrows
 	@Override
-	public void register(String service, String instance) {
+	public void register(String service, InstanceMeta instance) {
 		String servicePath = "/" + service;
 		// 创建服务持久化节点
 		if (client.checkExists().forPath(servicePath) == null) {
@@ -49,29 +51,30 @@ public class ZkRegistryCenter implements RegistryCenter {
 			System.out.println("=======> service register to zk: " + servicePath);
 		}
 		// 创建实例临时节点
-		String instancePath = servicePath + "/" + instance;
+		String instancePath = servicePath + "/" + instance.toPath();
 		client.create().withMode(CreateMode.EPHEMERAL).forPath(instancePath, "provider".getBytes());
 		System.out.println("=======> instance register to zk: " + instancePath);
 	}
 
 	@SneakyThrows
 	@Override
-	public void unregister(String service, String instance) {
+	public void unregister(String service, InstanceMeta instance) {
 		String servicePath = "/" + service;
 		if (client.checkExists().forPath(servicePath) == null) {
 			return;
 		}
 		// 删除实例节点
-		String instancePath = servicePath + "/" + instance;
+		String instancePath = servicePath + "/" + instance.toPath();
 		client.delete().quietly().forPath(instancePath);
 		System.out.println("=======> instance unregister to zk: " + instancePath);
 	}
 
 	@SneakyThrows
 	@Override
-	public List<String> fetchAll(String service) {
+	public List<InstanceMeta> fetchAll(String service) {
 		String servicePath = "/" + service;
-		return client.getChildren().forPath(servicePath);
+		List<String> nodes = client.getChildren().forPath(servicePath);
+		return mapInstanceMetas(nodes);
 	}
 
 	@SneakyThrows
@@ -85,10 +88,17 @@ public class ZkRegistryCenter implements RegistryCenter {
 				(curator, event) -> {
 					// 有任何节点变动这里会执行
 					System.out.println("zk subscribe event: " + event);
-					List<String> nodes = fetchAll(service);
+					List<InstanceMeta> nodes = fetchAll(service);
 					listener.fire(new Event(nodes));
 				}
 		);
 		cache.start();
+	}
+
+	private static List<InstanceMeta> mapInstanceMetas(List<String> nodes) {
+		return nodes.stream().map(node -> {
+			String[] splits = node.split("_");
+			return InstanceMeta.http(splits[0], Integer.valueOf(splits[1]));
+		}).collect(Collectors.toList());
 	}
 }

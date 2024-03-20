@@ -2,6 +2,7 @@ package com.abysscat.catrpc.core.provider;
 
 import com.abysscat.catrpc.core.annotation.CatProvider;
 import com.abysscat.catrpc.core.api.RegistryCenter;
+import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.meta.ProviderMeta;
 import com.abysscat.catrpc.core.utils.MethodUtils;
 import jakarta.annotation.PostConstruct;
@@ -42,7 +43,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @Value("${server.port}")
     private String port;
 
-    private String instance;
+    private InstanceMeta instance;
 
     @PostConstruct
     public void init() {
@@ -58,7 +59,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @SneakyThrows
     public void start() {
         String ip = InetAddress.getLocalHost().getHostAddress();
-        instance = ip + "_" + port;
+        instance = InstanceMeta.http(ip, Integer.valueOf(port));
         // 将服务注册到注册中心
         // 注：得保证服务注册到注册中心时，spring上下文已经初始化完成，才能对外暴露服务
         rc.start();

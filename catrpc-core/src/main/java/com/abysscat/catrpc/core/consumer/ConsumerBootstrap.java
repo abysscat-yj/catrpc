@@ -5,6 +5,7 @@ import com.abysscat.catrpc.core.api.LoadBalancer;
 import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.api.Router;
 import com.abysscat.catrpc.core.api.RpcContext;
+import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.utils.FieldUtils;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
@@ -17,7 +18,6 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 消费者启动类
@@ -88,25 +88,19 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
 	private Object createConsumerFromRegistry(Class<?> service, RpcContext context, RegistryCenter registryCenter) {
 		String serviceName = service.getCanonicalName();
-		List<String> providers = mapUrls(registryCenter.fetchAll(serviceName));
+		List<InstanceMeta> providers = registryCenter.fetchAll(serviceName);
 		System.out.println("createConsumerFromRegistry providers: ");
 		providers.forEach(System.out::println);
 
 		registryCenter.subscribe(serviceName, event -> {
 			providers.clear();
-			providers.addAll(mapUrls(event.getData()));
+			providers.addAll(event.getData());
 		});
 
 		return createConsumerProxyInstance(service, context, providers);
 	}
 
-	private List<String> mapUrls(List<String> nodes) {
-		return nodes.stream()
-				.map(x -> "http://" + x.replace('_', ':'))
-				.collect(Collectors.toList());
-	}
-
-	private Object createConsumerProxyInstance(Class<?> service, RpcContext context, List<String> providers) {
+	private Object createConsumerProxyInstance(Class<?> service, RpcContext context, List<InstanceMeta> providers) {
 		return Proxy.newProxyInstance(service.getClassLoader(),
 				new Class[]{service},
 				new CatInvocationHandler(service, context, providers)

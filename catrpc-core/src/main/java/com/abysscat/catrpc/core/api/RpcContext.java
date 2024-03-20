@@ -1,5 +1,6 @@
 package com.abysscat.catrpc.core.api;
 
+import com.abysscat.catrpc.core.meta.InstanceMeta;
 import lombok.Data;
 
 import java.util.List;
@@ -13,9 +14,9 @@ import java.util.List;
 @Data
 public class RpcContext {
 
-	Router router;
+	Router<InstanceMeta> router;
 
-	LoadBalancer loadBalancer;
+	LoadBalancer<InstanceMeta> loadBalancer;
 
 	List<Filter> filters;
 

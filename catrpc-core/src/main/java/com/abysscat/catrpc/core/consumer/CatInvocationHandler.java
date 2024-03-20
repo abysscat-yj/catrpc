@@ -4,6 +4,7 @@ import com.abysscat.catrpc.core.api.RpcContext;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
 import com.abysscat.catrpc.core.consumer.http.OkHttpInvoker;
+import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.utils.MethodUtils;
 import com.abysscat.catrpc.core.utils.TypeUtils;
 
@@ -21,11 +22,11 @@ public class CatInvocationHandler implements InvocationHandler {
 
 	Class<?> service;
 	RpcContext context;
-	List<String> providers;
+	List<InstanceMeta> providers;
 
 	HttpInvoker invoker = new OkHttpInvoker();
 
-	public CatInvocationHandler(Class<?> clazz, RpcContext context, List<String> providers) {
+	public CatInvocationHandler(Class<?> clazz, RpcContext context, List<InstanceMeta> providers) {
 		this.service = clazz;
 		this.context = context;
 		this.providers = providers;
@@ -44,12 +45,12 @@ public class CatInvocationHandler implements InvocationHandler {
 		rpcRequest.setMethodSign(MethodUtils.getMethodSign(method));
 		rpcRequest.setArgs(args);
 
-		List<String> urls = context.getRouter().route(providers);
-		String url = (String) context.getLoadBalancer().choose(urls);
+		List<InstanceMeta> instances = context.getRouter().route(providers);
+		InstanceMeta instance = context.getLoadBalancer().choose(instances);
 
-		System.out.println("CatInvocationHandler loadBalancer.choose url: " + url);
+		System.out.println("CatInvocationHandler loadBalancer.choose instance: " + instance);
 
-		RpcResponse rpcResponse = invoker.post(rpcRequest, url);
+		RpcResponse<?> rpcResponse = invoker.post(rpcRequest, instance.toUrl());
 
 		if (rpcResponse.isStatus()) {
 			Object data = rpcResponse.getData();
