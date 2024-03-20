@@ -1,6 +1,10 @@
 server:
   port: 8081
 
+catrpc:
+  zkServer: localhost:2181
+  zkRoot: catrpc
+
 app:
   id: app1
   namespace: public

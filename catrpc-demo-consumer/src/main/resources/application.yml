@@ -3,6 +3,8 @@ server:
 
 catrpc:
   providers: http://localhost:8081,http://localhost:8082,http://localhost:8083
+  zkServer: localhost:2181
+  zkRoot: catrpc
 
 app:
   id: app1
