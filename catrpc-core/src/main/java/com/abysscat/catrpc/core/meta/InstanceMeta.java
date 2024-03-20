@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import java.util.Map;
 
 /**
- * Description
+ * 实例描述元数据
  *
  * @Author: abysscat-yj
  * @Create: 2024/3/21 1:45

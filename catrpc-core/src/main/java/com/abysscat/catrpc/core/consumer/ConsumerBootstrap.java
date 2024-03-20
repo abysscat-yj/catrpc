@@ -6,8 +6,10 @@ import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.api.Router;
 import com.abysscat.catrpc.core.api.RpcContext;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
+import com.abysscat.catrpc.core.meta.ServiceMeta;
 import com.abysscat.catrpc.core.utils.FieldUtils;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -30,6 +32,18 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
 	ApplicationContext applicationContext;
 	Environment environment;
+
+	@Value("${app.id}")
+	private String app;
+
+	@Value("${app.namespace}")
+	private String namespace;
+
+	@Value("${app.env}")
+	private String env;
+
+	@Value("${app.version}")
+	private String version;
 
 	/**
 	 * Service Consumers Proxy Map
@@ -88,11 +102,14 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
 	private Object createConsumerFromRegistry(Class<?> service, RpcContext context, RegistryCenter registryCenter) {
 		String serviceName = service.getCanonicalName();
-		List<InstanceMeta> providers = registryCenter.fetchAll(serviceName);
+		ServiceMeta serviceMeta = ServiceMeta.builder()
+				.app(app).namespace(namespace).env(env).name(serviceName).version(version)
+				.build();
+		List<InstanceMeta> providers = registryCenter.fetchAll(serviceMeta);
 		System.out.println("createConsumerFromRegistry providers: ");
 		providers.forEach(System.out::println);
 
-		registryCenter.subscribe(serviceName, event -> {
+		registryCenter.subscribe(serviceMeta, event -> {
 			providers.clear();
 			providers.addAll(event.getData());
 		});

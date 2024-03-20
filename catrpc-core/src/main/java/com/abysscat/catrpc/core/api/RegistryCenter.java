@@ -1,6 +1,7 @@
 package com.abysscat.catrpc.core.api;
 
 import com.abysscat.catrpc.core.meta.InstanceMeta;
+import com.abysscat.catrpc.core.meta.ServiceMeta;
 import com.abysscat.catrpc.core.registry.ChangedListener;
 
 import java.util.List;
@@ -19,12 +20,12 @@ public interface RegistryCenter {
 
 
 	// provider侧
-	void register(String service, InstanceMeta instance);
-	void unregister(String service, InstanceMeta instance);
+	void register(ServiceMeta service, InstanceMeta instance);
+	void unregister(ServiceMeta service, InstanceMeta instance);
 
 	// consumer侧
-	List<InstanceMeta> fetchAll(String service);
-	 void subscribe(String service, ChangedListener listener);
+	List<InstanceMeta> fetchAll(ServiceMeta service);
+	 void subscribe(ServiceMeta service, ChangedListener listener);
 
 	class StaticRegistryCenter implements RegistryCenter {
 
@@ -45,22 +46,22 @@ public interface RegistryCenter {
 		}
 
 		@Override
-		public void register(String service, InstanceMeta instance) {
+		public void register(ServiceMeta service, InstanceMeta instance) {
 
 		}
 
 		@Override
-		public void unregister(String service, InstanceMeta instance) {
+		public void unregister(ServiceMeta service, InstanceMeta instance) {
 
 		}
 
 		@Override
-		public List<InstanceMeta> fetchAll(String service) {
+		public List<InstanceMeta> fetchAll(ServiceMeta service) {
 			return providers;
 		}
 
 		@Override
-		public void subscribe(String service, ChangedListener listener) {
+		public void subscribe(ServiceMeta service, ChangedListener listener) {
 
 		}
 	}

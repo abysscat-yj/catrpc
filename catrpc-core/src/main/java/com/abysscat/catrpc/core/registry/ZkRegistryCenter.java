@@ -2,6 +2,7 @@ package com.abysscat.catrpc.core.registry;
 
 import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
+import com.abysscat.catrpc.core.meta.ServiceMeta;
 import lombok.SneakyThrows;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -43,8 +44,8 @@ public class ZkRegistryCenter implements RegistryCenter {
 
 	@SneakyThrows
 	@Override
-	public void register(String service, InstanceMeta instance) {
-		String servicePath = "/" + service;
+	public void register(ServiceMeta service, InstanceMeta instance) {
+		String servicePath = "/" + service.toPath();
 		// 创建服务持久化节点
 		if (client.checkExists().forPath(servicePath) == null) {
 			client.create().withMode(CreateMode.PERSISTENT).forPath(servicePath, "service".getBytes());
@@ -58,8 +59,8 @@ public class ZkRegistryCenter implements RegistryCenter {
 
 	@SneakyThrows
 	@Override
-	public void unregister(String service, InstanceMeta instance) {
-		String servicePath = "/" + service;
+	public void unregister(ServiceMeta service, InstanceMeta instance) {
+		String servicePath = "/" + service.toPath();
 		if (client.checkExists().forPath(servicePath) == null) {
 			return;
 		}
@@ -71,16 +72,16 @@ public class ZkRegistryCenter implements RegistryCenter {
 
 	@SneakyThrows
 	@Override
-	public List<InstanceMeta> fetchAll(String service) {
-		String servicePath = "/" + service;
+	public List<InstanceMeta> fetchAll(ServiceMeta service) {
+		String servicePath = "/" + service.toPath();
 		List<String> nodes = client.getChildren().forPath(servicePath);
 		return mapInstanceMetas(nodes);
 	}
 
 	@SneakyThrows
 	@Override
-	public void subscribe(String service, ChangedListener listener) {
-		final TreeCache cache = TreeCache.newBuilder(client, "/"+service)
+	public void subscribe(ServiceMeta service, ChangedListener listener) {
+		final TreeCache cache = TreeCache.newBuilder(client, "/"+service.toPath())
 				.setCacheData(true)
 				.setMaxDepth(2)
 				.build();

@@ -4,6 +4,7 @@ import com.abysscat.catrpc.core.annotation.CatProvider;
 import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.meta.ProviderMeta;
+import com.abysscat.catrpc.core.meta.ServiceMeta;
 import com.abysscat.catrpc.core.utils.MethodUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -43,6 +44,18 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @Value("${server.port}")
     private String port;
 
+    @Value("${app.id}")
+    private String app;
+
+    @Value("${app.namespace}")
+    private String namespace;
+
+    @Value("${app.env}")
+    private String env;
+
+    @Value("${app.version}")
+    private String version;
+
     private InstanceMeta instance;
 
     @PostConstruct
@@ -73,11 +86,17 @@ public class ProviderBootstrap implements ApplicationContextAware {
     }
 
     private void registerService(String service) {
-        rc.register(service, instance);
+        ServiceMeta serviceMeta = ServiceMeta.builder()
+                .app(app).namespace(namespace).env(env).name(service).version(version)
+                .build();
+        rc.register(serviceMeta, instance);
     }
 
     private void unregisterService(String service) {
-        rc.unregister(service, instance);
+        ServiceMeta serviceMeta = ServiceMeta.builder()
+                .app(app).namespace(namespace).env(env).name(service).version(version)
+                .build();
+        rc.unregister(serviceMeta, instance);
     }
 
     private void genInterface(Object x) {
