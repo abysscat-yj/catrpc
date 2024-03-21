@@ -6,7 +6,6 @@ import com.abysscat.catrpc.demo.api.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -26,12 +25,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findById(int id) {
-        return new User(id, "cat-" +  environment.getProperty("server.port") + "-" + System.currentTimeMillis());
+        return new User(id, "cat-"
+                + environment.getProperty("server.port")
+                + "_" + System.currentTimeMillis());
     }
 
     @Override
     public User findById(int id, String name) {
-        return new User(id, "cat-" + name + System.currentTimeMillis());
+        return new User(id, "cat-" + name + "_" + System.currentTimeMillis());
     }
 
     @Override
@@ -40,21 +41,33 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public int getId(User user) {
-        if (user == null) {
-            return 0;
-        }
-        return user.getId();
+    public long getId(User user) {
+        return user.getId().longValue();
+    }
+
+    @Override
+    public long getId(float id) {
+        return 1L;
+    }
+
+    @Override
+    public String getName() {
+        return "cat123";
+    }
+
+    @Override
+    public String getName(int id) {
+        return "cat-" + id;
     }
 
     @Override
     public int[] getIds() {
-        return new int[]{111, 222, 333};
+        return new int[] {100,200,300};
     }
 
     @Override
     public long[] getLongIds() {
-        return new long[]{111, 222};
+        return new long[]{1,2,3};
     }
 
     @Override
@@ -63,16 +76,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getList(List<User> userList) {
-        return userList;
+    public User[] findUsers(User[] users) {
+        return users;
     }
 
     @Override
-    public List<Integer> getIdList(List<User> userList) {
-        if (CollectionUtils.isEmpty(userList)) {
-            return null;
-        }
-        return userList.stream().map(User::getId).toList();
+    public List<User> getList(List<User> userList) {
+        return userList;
     }
 
     @Override
@@ -81,7 +91,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User[] getUsers(User[] users) {
-        return users;
+    public Boolean getFlag(boolean flag) {
+        return !flag;
+    }
+
+    @Override
+    public User findById(long id) {
+        return new User(Long.valueOf(id).intValue(), "cat");
+    }
+
+    @Override
+    public User ex(boolean flag) {
+        if(flag) throw new RuntimeException("just throw an exception");
+        return new User(100, "cat100");
     }
 }
