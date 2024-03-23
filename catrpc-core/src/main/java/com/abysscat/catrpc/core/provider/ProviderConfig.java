@@ -2,6 +2,7 @@ package com.abysscat.catrpc.core.provider;
 
 import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.registry.zk.ZkRegistryCenter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +16,7 @@ import org.springframework.core.annotation.Order;
  * @Create: 2024/3/7 2:34
  */
 @Configuration
+@Slf4j
 public class ProviderConfig {
 
     @Bean
@@ -31,9 +33,9 @@ public class ProviderConfig {
     @Order(Integer.MIN_VALUE)
     public ApplicationRunner providerBootstrapRunner(@Autowired ProviderBootstrap providerBootstrap) {
         return x -> {
-            System.out.println("providerBootstrap starting ...");
+            log.info("providerBootstrap starting ...");
             providerBootstrap.start();
-            System.out.println("providerBootstrap started ...");
+            log.info("providerBootstrap started ...");
         };
     }
 

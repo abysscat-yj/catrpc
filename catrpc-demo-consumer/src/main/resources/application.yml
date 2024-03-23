@@ -11,3 +11,8 @@ app:
   namespace: public
   env: dev
   version: v1
+
+logging:
+  level:
+    root: info
+    com.abysscat.catrpc: debug

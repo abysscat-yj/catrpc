@@ -10,6 +10,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.Data;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -27,6 +28,7 @@ import java.util.Map;
  * @Create: 2024/3/7 2:31
  */
 @Data
+@Slf4j
 public class ProviderBootstrap implements ApplicationContextAware {
 
     ApplicationContext applicationContext;
@@ -63,7 +65,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
         rc = applicationContext.getBean(RegistryCenter.class);
 
         Map<String, Object> providers = applicationContext.getBeansWithAnnotation(CatProvider.class);
-        providers.forEach((x, y) -> System.out.println(x));
+        providers.forEach((x, y) -> log.info(x));
 
         providers.values().forEach(this::genInterface);
 

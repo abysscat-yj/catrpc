@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  * @Create: 2024/3/7 23:33
  */
 @CatProvider
-@Component
+@Component // todo 如何实现不用加 @Component 也能扫描注册到spring：利用ImportBeanDefinitionRegistrar
 public class OrderServiceImpl implements OrderService {
 	@Override
 	public Order findById(Integer id) {

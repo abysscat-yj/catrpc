@@ -6,6 +6,7 @@ import com.abysscat.catrpc.core.meta.ServiceMeta;
 import com.abysscat.catrpc.core.registry.ChangedListener;
 import com.abysscat.catrpc.core.registry.Event;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
  * @Author: abysscat-yj
  * @Create: 2024/3/17 21:44
  */
+@Slf4j
 public class ZkRegistryCenter implements RegistryCenter {
 
 	private CuratorFramework client = null;
@@ -42,13 +44,13 @@ public class ZkRegistryCenter implements RegistryCenter {
 				.retryPolicy(policy)
 				.build();
 		client.start();
-		System.out.println("=======> zk client started. server: " + zkServer + "/" + zkRoot);
+		log.info("=======> zk client started. server: " + zkServer + "/" + zkRoot);
 	}
 
 	@Override
 	public void stop() {
 		client.close();
-		System.out.println("=======> zk client stopped.");
+		log.info("=======> zk client stopped.");
 	}
 
 	@SneakyThrows
@@ -58,12 +60,12 @@ public class ZkRegistryCenter implements RegistryCenter {
 		// 创建服务持久化节点
 		if (client.checkExists().forPath(servicePath) == null) {
 			client.create().withMode(CreateMode.PERSISTENT).forPath(servicePath, "service".getBytes());
-			System.out.println("=======> service register to zk: " + servicePath);
+			log.info("=======> service register to zk: " + servicePath);
 		}
 		// 创建实例临时节点
 		String instancePath = servicePath + "/" + instance.toPath();
 		client.create().withMode(CreateMode.EPHEMERAL).forPath(instancePath, "provider".getBytes());
-		System.out.println("=======> instance register to zk: " + instancePath);
+		log.info("=======> instance register to zk: " + instancePath);
 	}
 
 	@SneakyThrows
@@ -76,7 +78,7 @@ public class ZkRegistryCenter implements RegistryCenter {
 		// 删除实例节点
 		String instancePath = servicePath + "/" + instance.toPath();
 		client.delete().quietly().forPath(instancePath);
-		System.out.println("=======> instance unregister to zk: " + instancePath);
+		log.info("=======> instance unregister to zk: " + instancePath);
 	}
 
 	@SneakyThrows
@@ -97,7 +99,7 @@ public class ZkRegistryCenter implements RegistryCenter {
 		cache.getListenable().addListener(
 				(curator, event) -> {
 					// 有任何节点变动这里会执行
-					System.out.println("zk subscribe event: " + event);
+					log.info("zk subscribe event: " + event);
 					List<InstanceMeta> nodes = fetchAll(service);
 					listener.fire(new Event(nodes));
 				}

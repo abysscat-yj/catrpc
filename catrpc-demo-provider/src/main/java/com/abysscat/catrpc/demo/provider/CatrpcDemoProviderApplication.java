@@ -4,6 +4,7 @@ import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
 import com.abysscat.catrpc.core.provider.ProviderConfig;
 import com.abysscat.catrpc.core.provider.ProviderInvoker;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @SpringBootApplication
 @RestController
 @Import({ProviderConfig.class})
+@Slf4j
 public class CatrpcDemoProviderApplication {
 
     public static void main(String[] args) {
@@ -48,7 +50,7 @@ public class CatrpcDemoProviderApplication {
             request.setArgs(new Object[]{123});
 
             RpcResponse<Object> response = invoke(request);
-            System.out.println("providerRun return: " + response.getData());
+            log.info("providerRun return: " + response.getData());
         };
     }
 

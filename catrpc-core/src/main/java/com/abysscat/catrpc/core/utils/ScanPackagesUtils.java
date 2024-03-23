@@ -37,7 +37,7 @@ public class ScanPackagesUtils {
 			}
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					ClassUtils.convertClassNameToResourcePath(SystemPropertyUtils.resolvePlaceholders(basePackage)) + "/" + DEFAULT_RESOURCE_PATTERN;
-//			System.out.println("packageSearchPath: "+packageSearchPath);
+//			log.debug("packageSearchPath: "+packageSearchPath);
 			try {
 				Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);
 				for (Resource resource : resources) {

@@ -7,6 +7,7 @@ import com.abysscat.catrpc.core.consumer.http.OkHttpInvoker;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.utils.MethodUtils;
 import com.abysscat.catrpc.core.utils.TypeUtils;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -18,6 +19,7 @@ import java.util.List;
  * @Author: abysscat-yj
  * @Create: 2024/3/10 23:18
  */
+@Slf4j
 public class CatInvocationHandler implements InvocationHandler {
 
 	Class<?> service;
@@ -48,7 +50,7 @@ public class CatInvocationHandler implements InvocationHandler {
 		List<InstanceMeta> instances = context.getRouter().route(providers);
 		InstanceMeta instance = context.getLoadBalancer().choose(instances);
 
-		System.out.println("CatInvocationHandler loadBalancer.choose instance: " + instance);
+		log.debug("CatInvocationHandler loadBalancer.choose instance: " + instance);
 
 		RpcResponse<?> rpcResponse = invoker.post(rpcRequest, instance.toUrl());
 
