@@ -7,7 +7,7 @@ import com.abysscat.catrpc.core.registry.ChangedListener;
 import java.util.List;
 
 /**
- * Description
+ * 注册中心接口
  *
  * @Author: abysscat-yj
  * @Create: 2024/3/17 21:20

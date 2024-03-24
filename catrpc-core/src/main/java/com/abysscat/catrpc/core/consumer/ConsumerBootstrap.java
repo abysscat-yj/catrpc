@@ -1,6 +1,7 @@
 package com.abysscat.catrpc.core.consumer;
 
 import com.abysscat.catrpc.core.annotation.CatConsumer;
+import com.abysscat.catrpc.core.api.Filter;
 import com.abysscat.catrpc.core.api.LoadBalancer;
 import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.api.Router;
@@ -58,12 +59,13 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
 		Router<InstanceMeta> router = applicationContext.getBean(Router.class);
 		LoadBalancer<InstanceMeta> loadBalancer = applicationContext.getBean(LoadBalancer.class);
+		RegistryCenter registryCenter = applicationContext.getBean(RegistryCenter.class);
+		List<Filter> filters = applicationContext.getBeansOfType(Filter.class).values().stream().toList();
 
 		RpcContext context = new RpcContext();
 		context.setRouter(router);
 		context.setLoadBalancer(loadBalancer);
-
-		RegistryCenter registryCenter = applicationContext.getBean(RegistryCenter.class);
+		context.setFilters(filters);
 
 		String[] names = applicationContext.getBeanDefinitionNames();
 		for (String name : names) {

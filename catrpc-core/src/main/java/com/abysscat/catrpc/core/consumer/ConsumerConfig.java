@@ -1,9 +1,11 @@
 package com.abysscat.catrpc.core.consumer;
 
+import com.abysscat.catrpc.core.api.Filter;
 import com.abysscat.catrpc.core.api.LoadBalancer;
 import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.api.Router;
 import com.abysscat.catrpc.core.cluster.RoundRobinBalancer;
+import com.abysscat.catrpc.core.filter.CacheFilter;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.registry.zk.ZkRegistryCenter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +56,11 @@ public class ConsumerConfig {
 	@Bean(initMethod = "start", destroyMethod = "stop")
 	public RegistryCenter consumerRC() {
 		return new ZkRegistryCenter();
+	}
+
+	@Bean
+	public Filter filter() {
+		return new CacheFilter();
 	}
 
 }

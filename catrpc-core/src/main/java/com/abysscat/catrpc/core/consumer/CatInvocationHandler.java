@@ -1,5 +1,6 @@
 package com.abysscat.catrpc.core.consumer;
 
+import com.abysscat.catrpc.core.api.Filter;
 import com.abysscat.catrpc.core.api.RpcContext;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
@@ -47,6 +48,15 @@ public class CatInvocationHandler implements InvocationHandler {
 		rpcRequest.setMethodSign(MethodUtils.getMethodSign(method));
 		rpcRequest.setArgs(args);
 
+		// 前置过滤处理
+		for (Filter filter : context.getFilters()) {
+			Object preResult = filter.preFilter(rpcRequest);
+			if (preResult != null) {
+				log.debug(filter.getClass().getName() + " =====> preFilter preResult: " + preResult);
+				return preResult;
+			}
+		}
+
 		List<InstanceMeta> instances = context.getRouter().route(providers);
 		InstanceMeta instance = context.getLoadBalancer().choose(instances);
 
@@ -54,6 +64,20 @@ public class CatInvocationHandler implements InvocationHandler {
 
 		RpcResponse<?> rpcResponse = invoker.post(rpcRequest, instance.toUrl());
 
+		Object result = castReturnResult(method, rpcResponse);
+
+		// 后置过滤处理
+		for (Filter filter : context.getFilters()) {
+			Object postResult = filter.postFilter(rpcRequest, rpcResponse, result);
+			if (postResult != null) {
+				return postResult;
+			}
+		}
+
+		return result;
+	}
+
+	private Object castReturnResult(Method method, RpcResponse<?> rpcResponse) {
 		if (rpcResponse.isStatus()) {
 			Object data = rpcResponse.getData();
 			return TypeUtils.castMethodResult(method, data);
@@ -61,7 +85,6 @@ public class CatInvocationHandler implements InvocationHandler {
 			Exception ex = rpcResponse.getEx();
 			throw new RuntimeException(ex);
 		}
-
 	}
 
 }
