@@ -59,8 +59,13 @@ public class ConsumerConfig {
 	}
 
 	@Bean
-	public Filter filter() {
+	public Filter cacheFilter() {
 		return new CacheFilter();
 	}
+
+//	@Bean
+//	public Filter mockFilter() {
+//		return new MockFilter();
+//	}
 
 }
