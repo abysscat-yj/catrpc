@@ -11,6 +11,7 @@ import com.abysscat.catrpc.core.registry.zk.ZkRegistryCenter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -34,7 +35,7 @@ public class ConsumerConfig {
     }
 
 	@Bean
-	@Order(Integer.MIN_VALUE) // 此处需要调高优先级，否则外层runner会先执行
+	@Order(Integer.MIN_VALUE + 1) // 此处需要调高优先级，否则外层runner会先执行
 	public ApplicationRunner consumerBootstrapRunner(@Autowired ConsumerBootstrap consumerBootstrap) {
 		return x -> {
 			consumerBootstrap.start();
@@ -54,6 +55,7 @@ public class ConsumerConfig {
 	}
 
 	@Bean(initMethod = "start", destroyMethod = "stop")
+	@ConditionalOnMissingBean
 	public RegistryCenter consumerRC() {
 		return new ZkRegistryCenter();
 	}
