@@ -1,5 +1,7 @@
 package com.abysscat.catrpc.core.provider;
 
+import com.abysscat.catrpc.core.api.exception.ErrorEnum;
+import com.abysscat.catrpc.core.api.exception.RpcException;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
 import com.abysscat.catrpc.core.meta.ProviderMeta;
@@ -36,7 +38,7 @@ public class ProviderInvoker {
 			ProviderMeta meta = findProviderMeta(providerMetas, request.getMethodSign());
 			if (meta == null) {
 				rpcResponse.setStatus(false);
-				rpcResponse.setEx(new RuntimeException("no such method, request:" + request));
+				rpcResponse.setEx(new RpcException(ErrorEnum.NO_SUCH_METHOD_ERROR));
 				return rpcResponse;
 			}
 			Method method = meta.getMethod();
@@ -47,9 +49,9 @@ public class ProviderInvoker {
 			rpcResponse.setStatus(true);
 			rpcResponse.setData(result);
 		} catch (InvocationTargetException e) {
-			rpcResponse.setEx(new RuntimeException(e.getTargetException().getMessage()));
+			rpcResponse.setEx(new RpcException(e.getTargetException().getMessage()));
 		} catch (IllegalAccessException e) {
-			rpcResponse.setEx(new RuntimeException(e.getMessage()));
+			rpcResponse.setEx(new RpcException(e.getMessage()));
 		}
 		return rpcResponse;
 	}

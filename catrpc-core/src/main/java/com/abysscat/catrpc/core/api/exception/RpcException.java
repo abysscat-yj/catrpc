@@ -1,0 +1,51 @@
+package com.abysscat.catrpc.core.api.exception;
+
+import lombok.Data;
+
+/**
+ * RPC异常类
+ *
+ * @Author: abysscat-yj
+ * @Create: 2024/3/28 0:51
+ */
+@Data
+public class RpcException extends RuntimeException {
+
+	private String type;
+
+	private String code;
+
+	public RpcException() {
+	}
+
+	public RpcException(ErrorEnum errorEnum) {
+		super(errorEnum.getMsg());
+		this.type = errorEnum.getType();
+		this.code = errorEnum.getCode();
+	}
+
+	public RpcException(String message) {
+		super(message);
+	}
+
+	public RpcException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public RpcException(Throwable cause) {
+		super(cause);
+	}
+
+	public RpcException(Throwable cause, ErrorEnum errorEnum) {
+		super(cause);
+		this.type = errorEnum.getType();
+		this.code = errorEnum.getCode();
+	}
+
+	public RpcException(Throwable cause, String type, String code) {
+		super(cause);
+		this.type = type;
+		this.code = code;
+	}
+
+}

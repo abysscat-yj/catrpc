@@ -1,11 +1,12 @@
 package com.abysscat.catrpc.core.registry.zk;
 
 import com.abysscat.catrpc.core.api.RegistryCenter;
+import com.abysscat.catrpc.core.api.exception.ErrorEnum;
+import com.abysscat.catrpc.core.api.exception.RpcException;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.meta.ServiceMeta;
 import com.abysscat.catrpc.core.registry.ChangedListener;
 import com.abysscat.catrpc.core.registry.Event;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -57,43 +58,51 @@ public class ZkRegistryCenter implements RegistryCenter {
 		log.info("=======> zk client stopped.");
 	}
 
-	@SneakyThrows
 	@Override
 	public void register(ServiceMeta service, InstanceMeta instance) {
 		String servicePath = "/" + service.toPath();
-		// 创建服务持久化节点
-		if (client.checkExists().forPath(servicePath) == null) {
-			client.create().withMode(CreateMode.PERSISTENT).forPath(servicePath, "service".getBytes());
-			log.info("=======> service register to zk: " + servicePath);
+		try {
+			// 创建服务持久化节点
+			if (client.checkExists().forPath(servicePath) == null) {
+				client.create().withMode(CreateMode.PERSISTENT).forPath(servicePath, "service".getBytes());
+				log.info("=======> service register to zk: " + servicePath);
+			}
+			// 创建实例临时节点
+			String instancePath = servicePath + "/" + instance.toPath();
+			client.create().withMode(CreateMode.EPHEMERAL).forPath(instancePath, "provider".getBytes());
+			log.info("=======> instance register to zk: " + instancePath);
+		} catch (Exception e) {
+			throw new RpcException(e, ErrorEnum.REGISTRY_ZK_ERROR);
 		}
-		// 创建实例临时节点
-		String instancePath = servicePath + "/" + instance.toPath();
-		client.create().withMode(CreateMode.EPHEMERAL).forPath(instancePath, "provider".getBytes());
-		log.info("=======> instance register to zk: " + instancePath);
 	}
 
-	@SneakyThrows
 	@Override
 	public void unregister(ServiceMeta service, InstanceMeta instance) {
 		String servicePath = "/" + service.toPath();
-		if (client.checkExists().forPath(servicePath) == null) {
-			return;
+		try {
+			if (client.checkExists().forPath(servicePath) == null) {
+				return;
+			}
+			// 删除实例节点
+			String instancePath = servicePath + "/" + instance.toPath();
+			client.delete().quietly().forPath(instancePath);
+			log.info("=======> instance unregister to zk: " + instancePath);
+		} catch (Exception e) {
+			throw new RpcException(e, ErrorEnum.REGISTRY_ZK_ERROR);
 		}
-		// 删除实例节点
-		String instancePath = servicePath + "/" + instance.toPath();
-		client.delete().quietly().forPath(instancePath);
-		log.info("=======> instance unregister to zk: " + instancePath);
 	}
 
-	@SneakyThrows
 	@Override
 	public List<InstanceMeta> fetchAll(ServiceMeta service) {
 		String servicePath = "/" + service.toPath();
-		List<String> nodes = client.getChildren().forPath(servicePath);
-		return mapInstanceMetas(nodes);
+		try {
+			List<String> nodes = client.getChildren().forPath(servicePath);
+			return mapInstanceMetas(nodes);
+		} catch (Exception e) {
+			throw new RpcException(e, ErrorEnum.REGISTRY_ZK_ERROR);
+		}
 	}
 
-	@SneakyThrows
 	@Override
 	public void subscribe(ServiceMeta service, ChangedListener listener) {
 		final TreeCache cache = TreeCache.newBuilder(client, "/"+service.toPath())
@@ -108,7 +117,11 @@ public class ZkRegistryCenter implements RegistryCenter {
 					listener.fire(new Event(nodes));
 				}
 		);
-		cache.start();
+		try {
+			cache.start();
+		} catch (Exception e) {
+			throw new RpcException(e, ErrorEnum.REGISTRY_ZK_ERROR);
+		}
 		caches.add(cache);
 	}
 
