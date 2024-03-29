@@ -47,6 +47,11 @@ public class CatrpcDemoConsumerApplication {
 		return userService.findById(id);
 	}
 
+	@RequestMapping("/find")
+	public User find(@RequestParam("timeout") int timeout) {
+		return userService.find(timeout);
+	}
+
 	@Bean
 	ApplicationRunner consumerRun() {
 		return x -> testAll();

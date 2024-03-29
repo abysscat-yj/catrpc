@@ -2,10 +2,10 @@ package com.abysscat.catrpc.core.consumer;
 
 import com.abysscat.catrpc.core.api.Filter;
 import com.abysscat.catrpc.core.api.RpcContext;
-import com.abysscat.catrpc.core.api.exception.ErrorEnum;
-import com.abysscat.catrpc.core.api.exception.RpcException;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
+import com.abysscat.catrpc.core.api.exception.ErrorEnum;
+import com.abysscat.catrpc.core.api.exception.RpcException;
 import com.abysscat.catrpc.core.consumer.http.OkHttpInvoker;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.utils.MethodUtils;
@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.net.SocketTimeoutException;
 import java.util.List;
 
 /**
@@ -28,13 +29,19 @@ public class CatInvocationHandler implements InvocationHandler {
 	Class<?> service;
 	RpcContext context;
 	List<InstanceMeta> providers;
+	int retries;
 
-	HttpInvoker invoker = new OkHttpInvoker();
+	HttpInvoker invoker;
 
 	public CatInvocationHandler(Class<?> clazz, RpcContext context, List<InstanceMeta> providers) {
 		this.service = clazz;
 		this.context = context;
 		this.providers = providers;
+		this.retries = Integer.parseInt(
+				context.getParameters().getOrDefault("app.retries", "1"));
+		int timeout = Integer.parseInt(
+				context.getParameters().getOrDefault("app.timeout", "1000"));
+		this.invoker =  new OkHttpInvoker(timeout);
 	}
 
 	@Override
@@ -49,30 +56,49 @@ public class CatInvocationHandler implements InvocationHandler {
 		rpcRequest.setService(service.getCanonicalName());
 		rpcRequest.setMethodSign(MethodUtils.getMethodSign(method));
 		rpcRequest.setArgs(args);
+		Object result = null;
 
-		// 前置过滤处理
-		for (Filter filter : context.getFilters()) {
-			Object preResult = filter.preFilter(rpcRequest);
-			if (preResult != null) {
-				log.debug(filter.getClass().getName() + " =====> preFilter preResult: " + preResult);
-				return preResult;
+		int currRetries = retries;
+
+		while (currRetries-- > 0) {
+
+			if (currRetries < retries - 1) {
+				log.debug("invoke retry ing... retries = " + currRetries);
 			}
-		}
 
-		List<InstanceMeta> instances = context.getRouter().route(providers);
-		InstanceMeta instance = context.getLoadBalancer().choose(instances);
+			try {
+				// 前置过滤处理
+				for (Filter filter : context.getFilters()) {
+					Object preResult = filter.preFilter(rpcRequest);
+					if (preResult != null) {
+						log.debug(filter.getClass().getName() + " =====> preFilter preResult: " + preResult);
+						return preResult;
+					}
+				}
 
-		log.debug("CatInvocationHandler loadBalancer.choose instance: " + instance);
+				List<InstanceMeta> instances = context.getRouter().route(providers);
+				InstanceMeta instance = context.getLoadBalancer().choose(instances);
 
-		RpcResponse<?> rpcResponse = invoker.post(rpcRequest, instance.toUrl());
+				log.debug("CatInvocationHandler loadBalancer.choose instance: " + instance);
 
-		Object result = castReturnResult(method, rpcResponse);
+				RpcResponse<?> rpcResponse = invoker.post(rpcRequest, instance.toUrl());
 
-		// 后置过滤处理
-		for (Filter filter : context.getFilters()) {
-			Object postResult = filter.postFilter(rpcRequest, rpcResponse, result);
-			if (postResult != null) {
-				return postResult;
+				result = castReturnResult(method, rpcResponse);
+
+				// 后置过滤处理
+				for (Filter filter : context.getFilters()) {
+					Object postResult = filter.postFilter(rpcRequest, rpcResponse, result);
+					if (postResult != null) {
+						return postResult;
+					}
+				}
+
+				return result;
+
+			} catch (Exception e) {
+				if (!(e.getCause() instanceof SocketTimeoutException)) {
+					throw e;
+				}
 			}
 		}
 

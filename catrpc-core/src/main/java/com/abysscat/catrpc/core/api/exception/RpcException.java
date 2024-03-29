@@ -18,10 +18,10 @@ public class RpcException extends RuntimeException {
 	public RpcException() {
 	}
 
-	public RpcException(ErrorEnum errorEnum) {
-		super(errorEnum.getMsg());
-		this.type = errorEnum.getType();
-		this.code = errorEnum.getCode();
+	public RpcException(BasicErrorCode errorCode) {
+		super(errorCode.getMsg());
+		this.type = errorCode.getType();
+		this.code = errorCode.getCode();
 	}
 
 	public RpcException(String message) {

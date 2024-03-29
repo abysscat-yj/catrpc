@@ -3,7 +3,9 @@ package com.abysscat.catrpc.core.api;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
 import lombok.Data;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Description
@@ -19,5 +21,7 @@ public class RpcContext {
 	LoadBalancer<InstanceMeta> loadBalancer;
 
 	List<Filter> filters;
+
+	private Map<String, String> parameters = new HashMap<>();
 
 }
