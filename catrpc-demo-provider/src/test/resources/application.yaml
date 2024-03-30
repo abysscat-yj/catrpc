@@ -10,6 +10,8 @@ app:
   namespace: public
   env: dev
   version: v1
+  retries: 2
+  timeout: 600
 
 logging:
   level:
