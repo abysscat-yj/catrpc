@@ -1,5 +1,8 @@
-### 测试超时接口
+### 通过8088调用接口 测试超时接口
 POST http://localhost:8088/find?timeout=3500
+
+### 通过8081调用接口 修改超时
+GET http://localhost:8081/ports?ports=8080,8094
 
 ### 获取用户信息8088 consumer
 POST http://localhost:8088/?id=55
