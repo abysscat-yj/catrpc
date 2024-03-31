@@ -3,6 +3,7 @@ package com.abysscat.catrpc.core.consumer;
 import com.abysscat.catrpc.core.api.LoadBalancer;
 import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.api.Router;
+import com.abysscat.catrpc.core.cluster.GrayRouter;
 import com.abysscat.catrpc.core.cluster.RoundRobinBalancer;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.registry.zk.ZkRegistryCenter;
@@ -25,6 +26,9 @@ public class ConsumerConfig {
 
 	@Value("${catrpc.providers}")
 	String providers;
+
+	@Value("${app.grayRatio}")
+	int grayRatio;
 
 
     @Bean
@@ -49,7 +53,7 @@ public class ConsumerConfig {
 
 	@Bean
 	public Router<InstanceMeta> router() {
-		return Router.Default;
+		return new GrayRouter(grayRatio);
 	}
 
 	@Bean(initMethod = "start", destroyMethod = "stop")

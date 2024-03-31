@@ -133,9 +133,10 @@ public class ZkRegistryCenter implements RegistryCenter {
 			InstanceMeta instance = InstanceMeta.http(splits[0], Integer.valueOf(splits[1]));
 
 			// 从zk拿到meta参数并赋值
+			String nodePath = servicePath + "/" + node;
 			byte[] bytes;
 			try {
-				bytes = client.getData().forPath(servicePath);
+				bytes = client.getData().forPath(nodePath);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}

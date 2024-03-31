@@ -1,11 +1,14 @@
 package com.abysscat.catrpc.demo.consumer;
 
 import com.abysscat.catrpc.core.annotation.CatConsumer;
+import com.abysscat.catrpc.core.api.Router;
+import com.abysscat.catrpc.core.cluster.GrayRouter;
 import com.abysscat.catrpc.core.consumer.ConsumerConfig;
 import com.abysscat.catrpc.demo.api.OrderService;
 import com.abysscat.catrpc.demo.api.User;
 import com.abysscat.catrpc.demo.api.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -50,6 +53,15 @@ public class CatrpcDemoConsumerApplication {
 	@RequestMapping("/find")
 	public User find(@RequestParam("timeout") int timeout) {
 		return userService.find(timeout);
+	}
+
+	@Autowired
+	Router router;
+
+	@RequestMapping("/gray")
+	public String gray(@RequestParam("ratio") int ratio) {
+		((GrayRouter)router).setGrayRatio(ratio);
+		return "OK-new gray ratio is " + ratio;
 	}
 
 	@Bean
