@@ -7,6 +7,7 @@ import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.meta.ServiceMeta;
 import com.abysscat.catrpc.core.registry.ChangedListener;
 import com.abysscat.catrpc.core.registry.Event;
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -17,6 +18,7 @@ import org.apache.zookeeper.CreateMode;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,13 +66,13 @@ public class ZkRegistryCenter implements RegistryCenter {
 		try {
 			// 创建服务持久化节点
 			if (client.checkExists().forPath(servicePath) == null) {
-				client.create().withMode(CreateMode.PERSISTENT).forPath(servicePath, "service".getBytes());
-				log.info("=======> service register to zk: " + servicePath);
+				client.create().withMode(CreateMode.PERSISTENT).forPath(servicePath, service.toMetas().getBytes());
+				log.info("=======> service register to zk: path: {}, meta: {}", servicePath, service.toMetas());
 			}
 			// 创建实例临时节点
 			String instancePath = servicePath + "/" + instance.toPath();
-			client.create().withMode(CreateMode.EPHEMERAL).forPath(instancePath, "provider".getBytes());
-			log.info("=======> instance register to zk: " + instancePath);
+			client.create().withMode(CreateMode.EPHEMERAL).forPath(instancePath, instance.toMetas().getBytes());
+			log.info("=======> instance register to zk: path: {}, meta: {}", instancePath, instance.toMetas());
 		} catch (Exception e) {
 			throw new RpcException(e, ErrorEnum.REGISTRY_ZK_ERROR);
 		}
@@ -97,7 +99,7 @@ public class ZkRegistryCenter implements RegistryCenter {
 		String servicePath = "/" + service.toPath();
 		try {
 			List<String> nodes = client.getChildren().forPath(servicePath);
-			return mapInstanceMetas(nodes);
+			return mapInstanceMetas(nodes, servicePath);
 		} catch (Exception e) {
 			throw new RpcException(e, ErrorEnum.REGISTRY_ZK_ERROR);
 		}
@@ -125,10 +127,21 @@ public class ZkRegistryCenter implements RegistryCenter {
 		caches.add(cache);
 	}
 
-	private static List<InstanceMeta> mapInstanceMetas(List<String> nodes) {
+	private List<InstanceMeta> mapInstanceMetas(List<String> nodes, String servicePath) {
 		return nodes.stream().map(node -> {
 			String[] splits = node.split("_");
-			return InstanceMeta.http(splits[0], Integer.valueOf(splits[1]));
+			InstanceMeta instance = InstanceMeta.http(splits[0], Integer.valueOf(splits[1]));
+
+			// 从zk拿到meta参数并赋值
+			byte[] bytes;
+			try {
+				bytes = client.getData().forPath(servicePath);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+			HashMap<String, String> metaMap = JSON.parseObject(new String(bytes), HashMap.class);
+			instance.setParameters(metaMap);
+			return instance;
 		}).collect(Collectors.toList());
 	}
 }

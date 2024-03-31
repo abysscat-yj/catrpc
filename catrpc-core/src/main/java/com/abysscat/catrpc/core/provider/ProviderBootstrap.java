@@ -58,6 +58,9 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @Value("${app.version}")
     private String version;
 
+    @Value("#{${app.metas}}")  // SPEL解析成map
+    Map<String, String> metas;
+
     private InstanceMeta instance;
 
     @PostConstruct
@@ -75,6 +78,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
     public void start() {
         String ip = InetAddress.getLocalHost().getHostAddress();
         instance = InstanceMeta.http(ip, Integer.valueOf(port));
+        instance.getParameters().putAll(metas);
         // 将服务注册到注册中心
         // 注：得保证服务注册到注册中心时，spring上下文已经初始化完成，才能对外暴露服务
         rc.start();
