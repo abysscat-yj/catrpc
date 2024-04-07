@@ -1,9 +1,9 @@
 package com.abysscat.catrpc.core.provider;
 
-import com.abysscat.catrpc.core.api.exception.ErrorEnum;
-import com.abysscat.catrpc.core.api.exception.RpcException;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
+import com.abysscat.catrpc.core.api.exception.ErrorEnum;
+import com.abysscat.catrpc.core.api.exception.RpcException;
 import com.abysscat.catrpc.core.meta.ProviderMeta;
 import com.abysscat.catrpc.core.utils.TypeUtils;
 import org.springframework.util.CollectionUtils;
@@ -11,9 +11,7 @@ import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,7 +42,7 @@ public class ProviderInvoker {
 			Method method = meta.getMethod();
 			Object bean = meta.getServiceImpl();
 			// 由于 request 中的 Object[] args 可能丢失掉基本类型、包装类、对象类型，所以需要转换
-			Object[] args = castArgsType(request.getArgs(), method);
+			Object[] args = processArgs(request.getArgs(), method.getParameterTypes(), method.getGenericParameterTypes());
 			Object result = method.invoke(bean, args);
 			rpcResponse.setStatus(true);
 			rpcResponse.setData(result);
@@ -66,28 +64,13 @@ public class ProviderInvoker {
 		return providerMeta.orElse(null);
 	}
 
-	private Object[] castArgsType(Object[] args, Method method) {
+	private Object[] processArgs(Object[] args, Class<?>[] parameterTypes, Type[] genericParameterTypes) {
 		if(args == null || args.length == 0) return args;
-
-		Object[] result = new Object[args.length];
+		Object[] actual = new Object[args.length];
 		for (int i = 0; i < args.length; i++) {
-			if (args[i] instanceof List list) {
-				List<Object> resultList = new ArrayList<>(list.size());
-				Type genericParameterType = method.getGenericParameterTypes()[i];
-				if (genericParameterType instanceof ParameterizedType parameterizedType) {
-					Type actualType = parameterizedType.getActualTypeArguments()[0];
-					for (Object o : list) {
-						resultList.add(TypeUtils.cast(o, (Class<?>) actualType));
-					}
-					result[i] = resultList;
-				} else {
-					result[i] = TypeUtils.cast(args[i], method.getParameterTypes()[i]);
-				}
-			} else {
-				result[i] = TypeUtils.cast(args[i], method.getParameterTypes()[i]);
-			}
+			actual[i] = TypeUtils.castGeneric(args[i], parameterTypes[i], genericParameterTypes[i]);
 		}
-		return result;
+		return actual;
 	}
 
 }

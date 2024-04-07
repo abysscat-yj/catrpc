@@ -13,7 +13,7 @@ app:
   version: v1
   retries: 2
   timeout: 600
-  grayRatio: 10
+  grayRatio: 10 # todo 可放到apollo配置中心，实时热更新
 
 logging:
   level:
