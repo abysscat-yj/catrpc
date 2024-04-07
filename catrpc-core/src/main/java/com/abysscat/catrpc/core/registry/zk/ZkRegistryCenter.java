@@ -34,10 +34,10 @@ public class ZkRegistryCenter implements RegistryCenter {
 	private CuratorFramework client = null;
 	private List<TreeCache> caches = new ArrayList<>();
 
-	@Value("${catrpc.zkServer}")
+	@Value("${catrpc.zk.server:localhost:2181}")
 	private String zkServer;
 
-	@Value("${catrpc.zkRoot}")
+	@Value("${catrpc.zk.root:catrpc}")
 	private String zkRoot;
 
 	@Override

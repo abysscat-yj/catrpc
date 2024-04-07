@@ -28,7 +28,7 @@ class CatrpcDemoConsumerApplicationTest {
 		// 先启动 provider
 		context = SpringApplication.run(CatrpcDemoProviderApplication.class,
 				"--server.port=8094",
-				"--catrpc.zkServer=localhost:2182",
+				"--catrpc.zk.server=localhost:2182",
 				"--logging.level.com.abysscat.catrpc=debug"
 		);
 	}

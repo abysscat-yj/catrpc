@@ -1,10 +1,13 @@
-package com.abysscat.catrpc.core.provider;
+package com.abysscat.catrpc.core.config;
 
 import com.abysscat.catrpc.core.api.RegistryCenter;
+import com.abysscat.catrpc.core.provider.ProviderBootstrap;
+import com.abysscat.catrpc.core.provider.ProviderInvoker;
 import com.abysscat.catrpc.core.registry.zk.ZkRegistryCenter;
 import com.abysscat.catrpc.core.transport.SpringBootTransport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -20,12 +23,21 @@ import org.springframework.core.annotation.Order;
  */
 @Configuration
 @Slf4j
-@Import({SpringBootTransport.class})
+@Import({AppConfigProperties.class, ProviderConfigProperties.class, SpringBootTransport.class})
 public class ProviderConfig {
+
+    @Value("${server.port:8080}")
+    private String port;
+
+    @Autowired
+    AppConfigProperties appConfigProperties;
+
+    @Autowired
+    ProviderConfigProperties providerConfigProperties;
 
     @Bean
     ProviderBootstrap createProviderBootstrap() {
-        return new ProviderBootstrap();
+        return new ProviderBootstrap(port, appConfigProperties, providerConfigProperties);
     }
 
     @Bean

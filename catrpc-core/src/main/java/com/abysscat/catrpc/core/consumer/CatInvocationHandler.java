@@ -40,6 +40,7 @@ public class CatInvocationHandler implements InvocationHandler {
 	final List<InstanceMeta> halfOpenProviders = new ArrayList<>();
 
 	int retries;
+	int faultLimit;
 	final Map<String, SlidingTimeWindow> windowMap = new HashMap<>();
 
 	HttpInvoker invoker;
@@ -51,12 +52,19 @@ public class CatInvocationHandler implements InvocationHandler {
 		this.context = context;
 		this.providers = providers;
 		this.retries = Integer.parseInt(
-				context.getParameters().getOrDefault("app.retries", "1"));
+				context.getParameters().getOrDefault("consumer.retries", "1"));
+		this.faultLimit = Integer.parseInt(
+				context.getParameters().getOrDefault("consumer.faultLimit", "10"));
 		int timeout = Integer.parseInt(
-				context.getParameters().getOrDefault("app.timeout", "1000"));
+				context.getParameters().getOrDefault("consumer.timeout", "1000"));
 		this.invoker =  new OkHttpInvoker(timeout);
 		this.executor = Executors.newScheduledThreadPool(1);
-		this.executor.scheduleWithFixedDelay(this::halfOpen, 10, 60, TimeUnit.SECONDS);
+		int halfOpenInitialDelay = Integer.parseInt(context.getParameters()
+				.getOrDefault("consumer.halfOpenInitialDelay", "10000"));
+		int halfOpenDelay = Integer.parseInt(context.getParameters()
+				.getOrDefault("consumer.halfOpenDelay", "60000"));
+		this.executor.scheduleWithFixedDelay(this::halfOpen, halfOpenInitialDelay,
+				halfOpenDelay, TimeUnit.MILLISECONDS);
 	}
 
 	/**
@@ -140,7 +148,7 @@ public class CatInvocationHandler implements InvocationHandler {
 
 						log.debug("instance {} in window with {}", url, window.getSum());
 
-						if (window.getSum() >= 10) {
+						if (window.getSum() >= this.faultLimit) {
 							isolate(instance);
 						}
 					}

@@ -4,7 +4,7 @@ import com.abysscat.catrpc.core.annotation.CatConsumer;
 import com.abysscat.catrpc.core.api.Router;
 import com.abysscat.catrpc.core.api.RpcContext;
 import com.abysscat.catrpc.core.cluster.GrayRouter;
-import com.abysscat.catrpc.core.consumer.ConsumerConfig;
+import com.abysscat.catrpc.core.config.ConsumerConfig;
 import com.abysscat.catrpc.demo.api.OrderService;
 import com.abysscat.catrpc.demo.api.User;
 import com.abysscat.catrpc.demo.api.UserService;

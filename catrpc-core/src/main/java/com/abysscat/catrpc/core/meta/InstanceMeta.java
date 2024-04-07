@@ -46,6 +46,11 @@ public class InstanceMeta {
 		return JSON.toJSONString(this.parameters);
 	}
 
+	public InstanceMeta addParams(Map<String, String> params) {
+		this.getParameters().putAll(params);
+		return this;
+	}
+
 	public static InstanceMeta http(String host, Integer port) {
 		return new InstanceMeta("http", host, port, "catrpc");
 	}

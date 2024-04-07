@@ -2,7 +2,7 @@ package com.abysscat.catrpc.demo.provider;
 
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
-import com.abysscat.catrpc.core.provider.ProviderConfig;
+import com.abysscat.catrpc.core.config.ProviderConfig;
 import com.abysscat.catrpc.core.transport.SpringBootTransport;
 import com.abysscat.catrpc.demo.api.UserService;
 import lombok.extern.slf4j.Slf4j;

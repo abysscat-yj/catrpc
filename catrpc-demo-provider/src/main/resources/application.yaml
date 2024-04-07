@@ -2,15 +2,19 @@ server:
   port: 8081
 
 catrpc:
-  zkServer: localhost:2181
-  zkRoot: catrpc
-
-app:
-  id: app1
-  namespace: public
-  env: dev
-  version: v1
-  metas: "{dc: 'bj', gray: 'false', unit: 'B001'}"
+  zk:
+    server: localhost:2181
+    root: catrpc
+  app:
+    id: app1
+    namespace: public
+    env: dev
+    version: v1
+  provider:
+    metas:
+      dc: bj
+      gray: false
+      unit: B001
 
 logging:
   level:

@@ -2,6 +2,8 @@ package com.abysscat.catrpc.core.provider;
 
 import com.abysscat.catrpc.core.annotation.CatProvider;
 import com.abysscat.catrpc.core.api.RegistryCenter;
+import com.abysscat.catrpc.core.config.AppConfigProperties;
+import com.abysscat.catrpc.core.config.ProviderConfigProperties;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.meta.ProviderMeta;
 import com.abysscat.catrpc.core.meta.ServiceMeta;
@@ -11,7 +13,6 @@ import jakarta.annotation.PreDestroy;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.LinkedMultiValueMap;
@@ -42,26 +43,18 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     RegistryCenter rc;
 
-
-    @Value("${server.port}")
     private String port;
 
-    @Value("${app.id}")
-    private String app;
-
-    @Value("${app.namespace}")
-    private String namespace;
-
-    @Value("${app.env}")
-    private String env;
-
-    @Value("${app.version}")
-    private String version;
-
-    @Value("#{${app.metas}}")  // SPEL解析成map
-    Map<String, String> metas;
-
+    private AppConfigProperties appProperties;
+    private ProviderConfigProperties providerProperties;
     private InstanceMeta instance;
+
+    public ProviderBootstrap(String port, AppConfigProperties appProperties,
+                             ProviderConfigProperties providerProperties) {
+        this.port = port;
+        this.appProperties = appProperties;
+        this.providerProperties = providerProperties;
+    }
 
     @PostConstruct
     public void init() {
@@ -77,8 +70,8 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @SneakyThrows
     public void start() {
         String ip = InetAddress.getLocalHost().getHostAddress();
-        instance = InstanceMeta.http(ip, Integer.valueOf(port));
-        instance.getParameters().putAll(this.metas);
+        instance = InstanceMeta.http(ip, Integer.valueOf(port))
+                .addParams(providerProperties.getMetas());
         // 将服务注册到注册中心
         // 注：得保证服务注册到注册中心时，spring上下文已经初始化完成，才能对外暴露服务
         rc.start();
@@ -93,14 +86,22 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     private void registerService(String service) {
         ServiceMeta serviceMeta = ServiceMeta.builder()
-                .app(app).namespace(namespace).env(env).name(service).version(version)
+                .app(appProperties.getId())
+                .namespace(appProperties.getNamespace())
+                .env(appProperties.getEnv())
+                .version(appProperties.getVersion())
+                .name(service)
                 .build();
         rc.register(serviceMeta, instance);
     }
 
     private void unregisterService(String service) {
         ServiceMeta serviceMeta = ServiceMeta.builder()
-                .app(app).namespace(namespace).env(env).name(service).version(version)
+                .app(appProperties.getId())
+                .namespace(appProperties.getNamespace())
+                .env(appProperties.getEnv())
+                .version(appProperties.getVersion())
+                .name(service)
                 .build();
         rc.unregister(serviceMeta, instance);
     }

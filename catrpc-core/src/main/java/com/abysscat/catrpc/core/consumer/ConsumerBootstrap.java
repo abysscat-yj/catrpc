@@ -1,17 +1,13 @@
 package com.abysscat.catrpc.core.consumer;
 
 import com.abysscat.catrpc.core.annotation.CatConsumer;
-import com.abysscat.catrpc.core.api.Filter;
-import com.abysscat.catrpc.core.api.LoadBalancer;
 import com.abysscat.catrpc.core.api.RegistryCenter;
-import com.abysscat.catrpc.core.api.Router;
 import com.abysscat.catrpc.core.api.RpcContext;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.meta.ServiceMeta;
 import com.abysscat.catrpc.core.utils.FieldUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -36,24 +32,6 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 	ApplicationContext applicationContext;
 	Environment environment;
 
-	@Value("${app.id}")
-	private String app;
-
-	@Value("${app.namespace}")
-	private String namespace;
-
-	@Value("${app.env}")
-	private String env;
-
-	@Value("${app.version}")
-	private String version;
-
-	@Value("${app.retries}")
-	private int retries;
-
-	@Value("${app.timeout}")
-	private int timeout;
-
 	/**
 	 * Service Consumers Proxy Map
 	 * key: service interface class canonical name
@@ -62,18 +40,8 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 	private Map<String, Object> stub = new HashMap<>();
 
 	public void start() {
-
-		Router<InstanceMeta> router = applicationContext.getBean(Router.class);
-		LoadBalancer<InstanceMeta> loadBalancer = applicationContext.getBean(LoadBalancer.class);
 		RegistryCenter registryCenter = applicationContext.getBean(RegistryCenter.class);
-		List<Filter> filters = applicationContext.getBeansOfType(Filter.class).values().stream().toList();
-
-		RpcContext context = new RpcContext();
-		context.setRouter(router);
-		context.setLoadBalancer(loadBalancer);
-		context.setFilters(filters);
-		context.getParameters().put("app.retries", String.valueOf(retries));
-		context.getParameters().put("app.timeout", String.valueOf(timeout));
+		RpcContext context = applicationContext.getBean(RpcContext.class);
 
 		String[] names = applicationContext.getBeanDefinitionNames();
 		for (String name : names) {
@@ -116,9 +84,12 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 	}
 
 	private Object createConsumerFromRegistry(Class<?> service, RpcContext context, RegistryCenter registryCenter) {
-		String serviceName = service.getCanonicalName();
 		ServiceMeta serviceMeta = ServiceMeta.builder()
-				.app(app).namespace(namespace).env(env).name(serviceName).version(version)
+				.app(context.param("app.id"))
+				.namespace(context.param("app.namespace"))
+				.env(context.param("app.env"))
+				.version(context.param("app.version"))
+				.name(service.getCanonicalName())
 				.build();
 		List<InstanceMeta> providers = registryCenter.fetchAll(serviceMeta);
 		log.info("createConsumerFromRegistry providers: ");
