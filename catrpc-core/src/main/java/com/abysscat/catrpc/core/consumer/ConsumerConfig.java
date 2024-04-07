@@ -1,10 +1,12 @@
 package com.abysscat.catrpc.core.consumer;
 
+import com.abysscat.catrpc.core.api.Filter;
 import com.abysscat.catrpc.core.api.LoadBalancer;
 import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.api.Router;
 import com.abysscat.catrpc.core.cluster.GrayRouter;
 import com.abysscat.catrpc.core.cluster.RoundRobinBalancer;
+import com.abysscat.catrpc.core.filter.ContextParameterFilter;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.registry.zk.ZkRegistryCenter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,5 +73,10 @@ public class ConsumerConfig {
 //	public Filter mockFilter() {
 //		return new MockFilter();
 //	}
+
+	@Bean
+	public Filter contextParameterFilter() {
+		return new ContextParameterFilter();
+	}
 
 }

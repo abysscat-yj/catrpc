@@ -1,6 +1,7 @@
 package com.abysscat.catrpc.demo.provider;
 
 import com.abysscat.catrpc.core.annotation.CatProvider;
+import com.abysscat.catrpc.core.api.RpcContext;
 import com.abysscat.catrpc.demo.api.User;
 import com.abysscat.catrpc.demo.api.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,5 +126,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void setTimeoutPorts(String timeoutPorts) {
         this.timeoutPorts = timeoutPorts;
+    }
+
+    @Override
+    public String echoParameter(String key) {
+        System.out.println(" ====>> RpcContext.ContextParameters: ");
+        RpcContext.ContextParameters.get().forEach((k,v)-> System.out.println(k + " -> " + v));
+        return RpcContext.getContextParameter(key);
     }
 }

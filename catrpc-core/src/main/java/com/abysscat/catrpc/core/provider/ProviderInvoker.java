@@ -1,11 +1,13 @@
 package com.abysscat.catrpc.core.provider;
 
+import com.abysscat.catrpc.core.api.RpcContext;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
 import com.abysscat.catrpc.core.api.exception.ErrorEnum;
 import com.abysscat.catrpc.core.api.exception.RpcException;
 import com.abysscat.catrpc.core.meta.ProviderMeta;
 import com.abysscat.catrpc.core.utils.TypeUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 
@@ -13,6 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -21,6 +24,7 @@ import java.util.Optional;
  * @Author: abysscat-yj
  * @Create: 2024/3/21 0:46
  */
+@Slf4j
 public class ProviderInvoker {
 
 	private MultiValueMap<String, ProviderMeta> skeleton;
@@ -30,6 +34,14 @@ public class ProviderInvoker {
 	}
 
 	public RpcResponse<Object> invoke(RpcRequest request) {
+		log.debug(" ===> ProviderInvoker.invoke(request:{})", request);
+
+		// request 上下文参数传递
+		Map<String, String> params = request.getParams();
+		if(!params.isEmpty()) {
+			params.forEach(RpcContext::setContextParameter);
+		}
+
 		List<ProviderMeta> providerMetas = skeleton.get(request.getService());
 		RpcResponse<Object> rpcResponse = new RpcResponse<>();
 		try {
