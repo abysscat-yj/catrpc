@@ -4,7 +4,6 @@ import com.abysscat.catrpc.core.api.Filter;
 import com.abysscat.catrpc.core.api.RpcContext;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
-import com.abysscat.catrpc.core.api.exception.ErrorEnum;
 import com.abysscat.catrpc.core.api.exception.RpcException;
 import com.abysscat.catrpc.core.consumer.http.OkHttpInvoker;
 import com.abysscat.catrpc.core.governance.SlidingTimeWindow;
@@ -190,12 +189,12 @@ public class CatInvocationHandler implements InvocationHandler {
 			Object data = rpcResponse.getData();
 			return TypeUtils.castMethodResult(method, data);
 		} else {
-			Exception exception = rpcResponse.getEx();
-			if(exception instanceof RpcException ex) {
-				throw ex;
-			} else {
-				throw new RpcException(exception, ErrorEnum.UNKNOWN_ERROR);
+			RpcException exception = rpcResponse.getEx();
+			if(exception != null) {
+				log.error("rpc response error.", exception);
+				throw exception;
 			}
+			return null;
 		}
 	}
 

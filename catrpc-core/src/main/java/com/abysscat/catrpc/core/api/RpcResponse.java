@@ -1,5 +1,6 @@
 package com.abysscat.catrpc.core.api;
 
+import com.abysscat.catrpc.core.api.exception.RpcException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,6 @@ public class RpcResponse<T> {
 
     T data;
 
-    Exception ex;
+    RpcException ex;
 
 }
