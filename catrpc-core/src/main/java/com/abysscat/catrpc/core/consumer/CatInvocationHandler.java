@@ -51,20 +51,15 @@ public class CatInvocationHandler implements InvocationHandler {
 		this.service = clazz;
 		this.context = context;
 		this.providers = providers;
-		this.retries = Integer.parseInt(
-				context.getParameters().getOrDefault("consumer.retries", "1"));
-		this.faultLimit = Integer.parseInt(
-				context.getParameters().getOrDefault("consumer.faultLimit", "10"));
-		int timeout = Integer.parseInt(
-				context.getParameters().getOrDefault("consumer.timeout", "1000"));
+		this.retries = context.getConsumerProperties().getRetries();
+		this.faultLimit = context.getConsumerProperties().getFaultLimit();
+		int timeout = context.getConsumerProperties().getTimeout();
 		this.invoker =  new OkHttpInvoker(timeout);
 		this.executor = Executors.newScheduledThreadPool(1);
-		int halfOpenInitialDelay = Integer.parseInt(context.getParameters()
-				.getOrDefault("consumer.halfOpenInitialDelay", "10000"));
-		int halfOpenDelay = Integer.parseInt(context.getParameters()
-				.getOrDefault("consumer.halfOpenDelay", "60000"));
-		this.executor.scheduleWithFixedDelay(this::halfOpen, halfOpenInitialDelay,
-				halfOpenDelay, TimeUnit.MILLISECONDS);
+		int halfOpenInitialDelay = context.getConsumerProperties().getHalfOpenInitialDelay();
+		int halfOpenDelay = context.getConsumerProperties().getHalfOpenDelay();
+		this.executor.scheduleWithFixedDelay(this::halfOpen,
+				halfOpenInitialDelay, halfOpenDelay, TimeUnit.MILLISECONDS);
 	}
 
 	/**

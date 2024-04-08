@@ -28,14 +28,14 @@ import java.util.List;
  * @Create: 2024/3/10 22:53
  */
 @Configuration
-@Import({AppConfigProperties.class,ConsumerConfigProperties.class})
+@Import({AppProperties.class, ConsumerProperties.class})
 public class ConsumerConfig {
 
 	@Autowired
-	AppConfigProperties appConfigProperties;
+	AppProperties appProperties;
 
 	@Autowired
-	ConsumerConfigProperties consumerConfigProperties;
+	ConsumerProperties consumerProperties;
 
     @Bean
 	ConsumerBootstrap createConsumerBootstrap() {
@@ -59,7 +59,7 @@ public class ConsumerConfig {
 
 	@Bean
 	public Router<InstanceMeta> router() {
-		return new GrayRouter(consumerConfigProperties.getGrayRatio());
+		return new GrayRouter(consumerProperties.getGrayRatio());
 	}
 
 	@Bean(initMethod = "start", destroyMethod = "stop")
@@ -91,15 +91,8 @@ public class ConsumerConfig {
 		context.setRouter(router);
 		context.setLoadBalancer(loadBalancer);
 		context.setFilters(filters);
-		context.getParameters().put("app.id", appConfigProperties.getId());
-		context.getParameters().put("app.namespace", appConfigProperties.getNamespace());
-		context.getParameters().put("app.env", appConfigProperties.getEnv());
-		context.getParameters().put("app.version", appConfigProperties.getVersion());
-		context.getParameters().put("consumer.retries", String.valueOf(consumerConfigProperties.getRetries()));
-		context.getParameters().put("consumer.timeout", String.valueOf(consumerConfigProperties.getTimeout()));
-		context.getParameters().put("consumer.faultLimit", String.valueOf(consumerConfigProperties.getFaultLimit()));
-		context.getParameters().put("consumer.halfOpenInitialDelay", String.valueOf(consumerConfigProperties.getHalfOpenInitialDelay()));
-		context.getParameters().put("consumer.halfOpenDelay", String.valueOf(consumerConfigProperties.getHalfOpenDelay()));
+		context.setAppProperties(appProperties);
+		context.setConsumerProperties(consumerProperties);
 		return context;
 	}
 

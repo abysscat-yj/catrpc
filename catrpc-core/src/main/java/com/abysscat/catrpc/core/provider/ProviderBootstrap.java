@@ -2,8 +2,8 @@ package com.abysscat.catrpc.core.provider;
 
 import com.abysscat.catrpc.core.annotation.CatProvider;
 import com.abysscat.catrpc.core.api.RegistryCenter;
-import com.abysscat.catrpc.core.config.AppConfigProperties;
-import com.abysscat.catrpc.core.config.ProviderConfigProperties;
+import com.abysscat.catrpc.core.config.AppProperties;
+import com.abysscat.catrpc.core.config.ProviderProperties;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.meta.ProviderMeta;
 import com.abysscat.catrpc.core.meta.ServiceMeta;
@@ -45,12 +45,12 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     private String port;
 
-    private AppConfigProperties appProperties;
-    private ProviderConfigProperties providerProperties;
+    private AppProperties appProperties;
+    private ProviderProperties providerProperties;
     private InstanceMeta instance;
 
-    public ProviderBootstrap(String port, AppConfigProperties appProperties,
-                             ProviderConfigProperties providerProperties) {
+    public ProviderBootstrap(String port, AppProperties appProperties,
+                             ProviderProperties providerProperties) {
         this.port = port;
         this.appProperties = appProperties;
         this.providerProperties = providerProperties;

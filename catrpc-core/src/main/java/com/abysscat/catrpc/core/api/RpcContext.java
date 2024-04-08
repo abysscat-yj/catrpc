@@ -1,5 +1,7 @@
 package com.abysscat.catrpc.core.api;
 
+import com.abysscat.catrpc.core.config.AppProperties;
+import com.abysscat.catrpc.core.config.ConsumerProperties;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
 import lombok.Data;
 
@@ -21,6 +23,10 @@ public class RpcContext {
 	LoadBalancer<InstanceMeta> loadBalancer;
 
 	List<Filter> filters;
+
+	AppProperties appProperties;
+
+	ConsumerProperties consumerProperties;
 
 	private Map<String, String> parameters = new HashMap<>();
 

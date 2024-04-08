@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "catrpc.app")
-public class AppConfigProperties {
+public class AppProperties {
 
 	// for app instance
 	private String id = "app1";

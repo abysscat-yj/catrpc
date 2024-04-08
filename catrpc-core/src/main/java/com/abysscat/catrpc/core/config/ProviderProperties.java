@@ -16,7 +16,7 @@ import java.util.Map;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "catrpc.provider")
-public class ProviderConfigProperties {
+public class ProviderProperties {
 
 	// for provider
 	Map<String, String> metas = new HashMap<>();
