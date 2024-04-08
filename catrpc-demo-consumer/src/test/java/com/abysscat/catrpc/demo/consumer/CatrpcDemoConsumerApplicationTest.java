@@ -29,7 +29,12 @@ class CatrpcDemoConsumerApplicationTest {
 		context = SpringApplication.run(CatrpcDemoProviderApplication.class,
 				"--server.port=8094",
 				"--catrpc.zk.server=localhost:2182",
-				"--logging.level.com.abysscat.catrpc=debug"
+				"--catrpc.app.env=test",
+				"--logging.level.com.abysscat.catrpc=info",
+				"--catrpc.provider.metas.dc=bj",
+				"--catrpc.provider.metas.gray=false",
+				"--catrpc.provider.metas.unit=B001",
+				"--catrpc.provider.metas.tc=300"
 		);
 	}
 

@@ -6,26 +6,29 @@
     <parent>
         <groupId>com.abysscat</groupId>
         <artifactId>catrpc</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${catrpc.version}</version>
     </parent>
 
     <artifactId>catrpc-demo-consumer</artifactId>
+    <version>${catrpc.version}</version>
+    <name>catrpc-demo-consumer</name>
+    <description>catrpc-demo-consumer</description>
 
     <dependencies>
         <dependency>
             <groupId>com.abysscat</groupId>
             <artifactId>catrpc-core</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${catrpc.version}</version>
         </dependency>
         <dependency>
             <groupId>com.abysscat</groupId>
             <artifactId>catrpc-demo-api</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${catrpc.version}</version>
         </dependency>
         <dependency>
             <groupId>com.abysscat</groupId>
             <artifactId>catrpc-demo-provider</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${catrpc.version}</version>
             <scope>test</scope>
         </dependency>
 

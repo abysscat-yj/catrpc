@@ -3,12 +3,12 @@ server:
 
 catrpc:
   zk:
-    server: localhost:2181
+    server: localhost:2182
     root: catrpc
   app:
     id: app1
     namespace: public
-    env: dev
+    env: test
     version: v1
   consumer:
     retries: 2
