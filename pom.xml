@@ -8,6 +8,8 @@
     <artifactId>catrpc</artifactId>
     <version>${catrpc.version}</version>
     <packaging>pom</packaging>
+    <name>catrpc-parent</name>
+    <description>catrpc-parent</description>
     <url>https://github.com/abysscat-yj/catrpc</url>
 
     <licenses>
@@ -32,7 +34,7 @@
     <developers>
         <developer>
             <name>abysscat-yj</name>
-            <email>yj397@163.com</email>
+            <email>yuanjie397@163.com</email>
             <url>http://abysscat.com</url>
         </developer>
     </developers>
@@ -49,7 +51,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <catrpc.version>0.0.1-SNAPSHOT</catrpc.version>
+        <catrpc.version>0.0.3</catrpc.version>
 
         <spring.boot.version>3.2.3</spring.boot.version>
         <lombok.version>1.18.30</lombok.version>
