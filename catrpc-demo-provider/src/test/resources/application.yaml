@@ -15,8 +15,9 @@ catrpc:
       dc: bj
       gray: false
       unit: B001
+      tc: 20
 
 logging:
   level:
     root: info
-    com.abysscat.catrpc: debug
+    com.abysscat.catrpc: info

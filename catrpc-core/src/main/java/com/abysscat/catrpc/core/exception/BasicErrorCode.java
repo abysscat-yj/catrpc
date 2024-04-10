@@ -1,4 +1,4 @@
-package com.abysscat.catrpc.core.api.exception;
+package com.abysscat.catrpc.core.exception;
 
 /**
  * 统一错误码对象

@@ -57,6 +57,21 @@ public class CatrpcDemoProviderApplication {
 
             RpcResponse<Object> response = transport.invoke(request);
             log.info("providerRun return: " + response.getData());
+
+
+//            System.out.println("Provider Case 1. >>===[复杂测试：测试流量并发控制]===");
+//            for (int i = 0; i < 120; i++) {
+//                try {
+//                    Thread.sleep(1000);
+//                    RpcResponse<Object> r = transport.invoke(request);
+//                    System.out.println(i + " ***>>> " +r.getData());
+//                } catch (RpcException e) {
+//                    // ignore
+//                    System.out.println(i + " ***>>> RpcException: " +e.getMessage() + " -> " + e.getCode());
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
         };
     }
 

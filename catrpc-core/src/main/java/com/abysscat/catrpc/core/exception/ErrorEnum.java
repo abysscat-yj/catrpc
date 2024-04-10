@@ -1,4 +1,4 @@
-package com.abysscat.catrpc.core.api.exception;
+package com.abysscat.catrpc.core.exception;
 
 import lombok.Getter;
 
@@ -18,6 +18,8 @@ public enum ErrorEnum implements BasicErrorCode {
 	SOCKET_TIMEOUT_ERROR("X", "001", "http_invoke_timeout"),
 	NO_SUCH_METHOD_ERROR("X", "002", "method_not_exists"),
 	REGISTRY_ZK_ERROR("X", "003", "registry_zk_error"),
+	EXCEED_LIMIT_ERROR("X", "004", "tps_exceed_limit"),
+
 	UNKNOWN_ERROR("Z", "001", "unknown");
 
 	private final String type;

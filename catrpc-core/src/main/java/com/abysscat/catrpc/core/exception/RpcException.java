@@ -1,4 +1,4 @@
-package com.abysscat.catrpc.core.api.exception;
+package com.abysscat.catrpc.core.exception;
 
 import lombok.Data;
 
@@ -30,6 +30,11 @@ public class RpcException extends RuntimeException {
 
 	public RpcException(String message, Throwable cause) {
 		super(message, cause);
+	}
+
+	public RpcException(String message, ErrorEnum errorEnum) {
+		super(message);
+		this.code = errorEnum.getCode();
 	}
 
 	public RpcException(Throwable cause) {

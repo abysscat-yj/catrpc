@@ -4,7 +4,7 @@ import com.abysscat.catrpc.core.api.Filter;
 import com.abysscat.catrpc.core.api.RpcContext;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
-import com.abysscat.catrpc.core.api.exception.RpcException;
+import com.abysscat.catrpc.core.exception.RpcException;
 import com.abysscat.catrpc.core.consumer.http.OkHttpInvoker;
 import com.abysscat.catrpc.core.governance.SlidingTimeWindow;
 import com.abysscat.catrpc.core.meta.InstanceMeta;

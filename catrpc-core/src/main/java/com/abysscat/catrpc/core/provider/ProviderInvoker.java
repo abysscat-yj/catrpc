@@ -3,8 +3,10 @@ package com.abysscat.catrpc.core.provider;
 import com.abysscat.catrpc.core.api.RpcContext;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
-import com.abysscat.catrpc.core.api.exception.ErrorEnum;
-import com.abysscat.catrpc.core.api.exception.RpcException;
+import com.abysscat.catrpc.core.exception.ErrorEnum;
+import com.abysscat.catrpc.core.exception.RpcException;
+import com.abysscat.catrpc.core.config.ProviderProperties;
+import com.abysscat.catrpc.core.governance.SlidingTimeWindow;
 import com.abysscat.catrpc.core.meta.ProviderMeta;
 import com.abysscat.catrpc.core.utils.TypeUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import org.springframework.util.MultiValueMap;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,8 +32,13 @@ public class ProviderInvoker {
 
 	private MultiValueMap<String, ProviderMeta> skeleton;
 
+	final Map<String, SlidingTimeWindow> windows = new HashMap<>();
+
+	final ProviderProperties providerProperties;
+
 	public ProviderInvoker(ProviderBootstrap providerBootstrap) {
 		this.skeleton = providerBootstrap.getSkeleton();
+		this.providerProperties = providerBootstrap.getProviderProperties();
 	}
 
 	public RpcResponse<Object> invoke(RpcRequest request) {
@@ -40,6 +48,24 @@ public class ProviderInvoker {
 		Map<String, String> params = request.getParams();
 		if(!params.isEmpty()) {
 			params.forEach(RpcContext::setContextParameter);
+		}
+
+		// 限流
+		String service = request.getService();
+		// todo 按服务粒度限流
+		// todo 分布式节点共享限流, redis
+		// todo 令牌桶和漏桶
+		int trafficControl = Integer.parseInt(providerProperties.getMetas().getOrDefault("tc", "20"));
+		log.debug(" ===>> trafficControl:{} for {}", trafficControl, service);
+		synchronized (windows) {
+			SlidingTimeWindow window = windows.computeIfAbsent(service, k -> new SlidingTimeWindow());
+			if (window.calcSum() >= trafficControl) {
+				throw new RpcException("service " + service + " invoked in 30s/[" +
+						window.getSum() + "] larger than tpsLimit = " + trafficControl, ErrorEnum.EXCEED_LIMIT_ERROR);
+			}
+
+			window.record(System.currentTimeMillis());
+			log.debug("service {} in window with {}", service, window.getSum());
 		}
 
 		List<ProviderMeta> providerMetas = skeleton.get(request.getService());
