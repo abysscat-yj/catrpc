@@ -1,3 +1,6 @@
+app:
+  id: catrpc
+
 server:
   port: 8088
 
@@ -22,3 +25,14 @@ logging:
   level:
     root: info
     com.abysscat.catrpc: debug
+
+apollo:
+  cacheDir: /opt/data/
+  cluster: default
+  meta: http://localhost:8080
+  autoUpdateInjectedSpringProperties: true
+  bootstrap:
+    enabled: true
+    namespaces: app1
+    eagerLoad:
+      enabled: false

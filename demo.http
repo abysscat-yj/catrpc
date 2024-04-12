@@ -1,3 +1,6 @@
+### 获取provider metas
+POST http://localhost:8081/metas
+
 ### 获取用户信息8088 consumer
 POST http://localhost:8088/?id=55
 
@@ -21,13 +24,13 @@ Content-Type: application/json
 }
 
 ### 获取用户信息
-POST http://localhost:8081/
+POST http://localhost:8081/catrpc
 Content-Type: application/json
 
 {
   "service": "com.abysscat.catrpc.demo.api.UserService",
-  "methodSign": "fd6be21ff9e15424ea10347ea5f095af",
-  "args": [100, "yj"]
+  "methodSign": "7f90d3ebfd077ad3c1bb7b05930080a1",
+  "args": [100]
 }
 
 ### 获取订单信息

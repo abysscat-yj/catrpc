@@ -58,6 +58,7 @@
         <curator.version>5.1.0</curator.version>
         <fastjson.version>1.2.83</fastjson.version>
         <okhttp.version>4.12.0</okhttp.version>
+        <apollo.version>2.2.0</apollo.version>
     </properties>
 
     <distributionManagement>

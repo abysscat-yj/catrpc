@@ -2,7 +2,9 @@ package com.abysscat.catrpc.demo.provider;
 
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
+import com.abysscat.catrpc.core.config.ApolloChangedListener;
 import com.abysscat.catrpc.core.config.ProviderConfig;
+import com.abysscat.catrpc.core.config.ProviderProperties;
 import com.abysscat.catrpc.core.transport.SpringBootTransport;
 import com.abysscat.catrpc.demo.api.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -32,11 +34,22 @@ public class CatrpcDemoProviderApplication {
         SpringApplication.run(CatrpcDemoProviderApplication.class, args);
     }
 
+    /**
+     * apollo配置监听器
+     */
+    @Bean
+    ApolloChangedListener listener(){
+        return new ApolloChangedListener();
+    }
+
     @Autowired
     SpringBootTransport transport;
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    ProviderProperties providerProperties;
 
     @RequestMapping("/ports")
     public RpcResponse<String> ports(@RequestParam("ports") String ports) {
@@ -44,6 +57,14 @@ public class CatrpcDemoProviderApplication {
         RpcResponse<String> response = new RpcResponse<>();
         response.setStatus(true);
         response.setData("OK:" + ports);
+        return response;
+    }
+
+    @RequestMapping("/metas")
+    public RpcResponse<Object> metas() {
+        RpcResponse<Object> response = new RpcResponse<>();
+        response.setStatus(true);
+        response.setData(providerProperties.getMetas());
         return response;
     }
 

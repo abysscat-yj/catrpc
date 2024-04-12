@@ -124,6 +124,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
         meta.setMethod(method);
         meta.setMethodSign(MethodUtils.getMethodSign(method));
         meta.setServiceImpl(x);
+        log.debug("create provider {}: {}", service.getCanonicalName(), meta);
         skeleton.add(service.getCanonicalName(), meta);
     }
 
