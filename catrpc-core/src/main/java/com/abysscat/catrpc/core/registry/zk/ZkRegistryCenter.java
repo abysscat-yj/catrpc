@@ -1,6 +1,6 @@
 package com.abysscat.catrpc.core.registry.zk;
 
-import com.abysscat.catrpc.core.api.RegistryCenter;
+import com.abysscat.catrpc.core.registry.RegistryCenter;
 import com.abysscat.catrpc.core.exception.ErrorEnum;
 import com.abysscat.catrpc.core.exception.RpcException;
 import com.abysscat.catrpc.core.meta.InstanceMeta;

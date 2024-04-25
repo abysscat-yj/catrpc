@@ -20,6 +20,9 @@ catrpc:
       unit: B001
       tc: 20
 
+catregistry:
+  servers: http://localhost:8484
+
 logging:
   level:
     root: info

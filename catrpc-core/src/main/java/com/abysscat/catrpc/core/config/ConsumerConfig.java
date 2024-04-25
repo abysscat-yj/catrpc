@@ -2,7 +2,6 @@ package com.abysscat.catrpc.core.config;
 
 import com.abysscat.catrpc.core.api.Filter;
 import com.abysscat.catrpc.core.api.LoadBalancer;
-import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.api.Router;
 import com.abysscat.catrpc.core.api.RpcContext;
 import com.abysscat.catrpc.core.cluster.GrayRouter;
@@ -10,7 +9,8 @@ import com.abysscat.catrpc.core.cluster.RoundRobinBalancer;
 import com.abysscat.catrpc.core.consumer.ConsumerBootstrap;
 import com.abysscat.catrpc.core.filter.ContextParameterFilter;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
-import com.abysscat.catrpc.core.registry.zk.ZkRegistryCenter;
+import com.abysscat.catrpc.core.registry.RegistryCenter;
+import com.abysscat.catrpc.core.registry.cat.CatRegistryCenter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -65,7 +65,8 @@ public class ConsumerConfig {
 	@Bean(initMethod = "start", destroyMethod = "stop")
 	@ConditionalOnMissingBean
 	public RegistryCenter consumerRC() {
-		return new ZkRegistryCenter();
+//		return new ZkRegistryCenter();
+		return new CatRegistryCenter();
 	}
 
 //	@Bean

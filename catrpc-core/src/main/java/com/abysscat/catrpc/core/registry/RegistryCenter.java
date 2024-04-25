@@ -1,8 +1,7 @@
-package com.abysscat.catrpc.core.api;
+package com.abysscat.catrpc.core.registry;
 
 import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.meta.ServiceMeta;
-import com.abysscat.catrpc.core.registry.ChangedListener;
 
 import java.util.List;
 

@@ -21,6 +21,9 @@ catrpc:
     halfOpenInitialDelay: 10000
     halfOpenDelay: 60000
 
+catregistry:
+  servers: http://localhost:8484
+
 logging:
   level:
     root: info

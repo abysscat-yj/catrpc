@@ -1,7 +1,7 @@
 package com.abysscat.catrpc.core.consumer;
 
 import com.abysscat.catrpc.core.annotation.CatConsumer;
-import com.abysscat.catrpc.core.api.RegistryCenter;
+import com.abysscat.catrpc.core.registry.RegistryCenter;
 import com.abysscat.catrpc.core.api.RpcContext;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
 import com.abysscat.catrpc.core.meta.ServiceMeta;

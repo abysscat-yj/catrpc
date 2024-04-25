@@ -1,9 +1,9 @@
 package com.abysscat.catrpc.core.config;
 
-import com.abysscat.catrpc.core.api.RegistryCenter;
 import com.abysscat.catrpc.core.provider.ProviderBootstrap;
 import com.abysscat.catrpc.core.provider.ProviderInvoker;
-import com.abysscat.catrpc.core.registry.zk.ZkRegistryCenter;
+import com.abysscat.catrpc.core.registry.RegistryCenter;
+import com.abysscat.catrpc.core.registry.cat.CatRegistryCenter;
 import com.abysscat.catrpc.core.transport.SpringBootTransport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +58,8 @@ public class ProviderConfig {
     @Bean
     @ConditionalOnMissingBean
     public RegistryCenter providerRC() {
-        return new ZkRegistryCenter();
+//        return new ZkRegistryCenter();
+        return new CatRegistryCenter();
     }
 
 }

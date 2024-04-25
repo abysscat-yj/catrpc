@@ -1,7 +1,7 @@
 package com.abysscat.catrpc.core.provider;
 
 import com.abysscat.catrpc.core.annotation.CatProvider;
-import com.abysscat.catrpc.core.api.RegistryCenter;
+import com.abysscat.catrpc.core.registry.RegistryCenter;
 import com.abysscat.catrpc.core.config.AppProperties;
 import com.abysscat.catrpc.core.config.ProviderProperties;
 import com.abysscat.catrpc.core.meta.InstanceMeta;
