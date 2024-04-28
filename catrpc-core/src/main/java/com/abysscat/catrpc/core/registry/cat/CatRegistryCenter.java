@@ -29,6 +29,15 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class CatRegistryCenter implements RegistryCenter {
 
+	/**
+	 * 注册中心服务端接口地址
+	 */
+	private static final String REG_API_PATH = "/reg";
+	private static final String UNREG_API_PATH = "/unreg";
+	private static final String FINDALL_API_PATH = "/findAll";
+	private static final String VERSION_API_PATH = "/version";
+	private static final String RENEWS_API_PATH = "/renews";
+
 	@Value(value = "${catregistry.servers}")
 	private String servers;
 
@@ -69,7 +78,7 @@ public class CatRegistryCenter implements RegistryCenter {
 						}
 						Long timestamp = null;
 						try {
-							timestamp = HttpInvoker.httpPost(JSON.toJSONString(instance), servers + "/renews?services=" + services, Long.class);
+							timestamp = HttpInvoker.httpPost(JSON.toJSONString(instance), renewsPath(serviceMetas), Long.class);
 						} catch (Exception e) {
 							log.error("renew instance {} for {} at {} failed", instance, services, timestamp);
 							return;
@@ -102,7 +111,7 @@ public class CatRegistryCenter implements RegistryCenter {
 	@Override
 	public void register(ServiceMeta service, InstanceMeta instance) {
 		log.info("register instance [{}] for service :{}", instance, service);
-		HttpInvoker.httpPost(JSON.toJSONString(instance), servers + "/reg?service=" + service.toPath(), InstanceMeta.class);
+		HttpInvoker.httpPost(JSON.toJSONString(instance), regPath(service), InstanceMeta.class);
 		log.info("registered instance [{}] for service :{}", instance, service);
 		RENEWS.add(instance, service);
 	}
@@ -110,7 +119,7 @@ public class CatRegistryCenter implements RegistryCenter {
 	@Override
 	public void unregister(ServiceMeta service, InstanceMeta instance) {
 		log.info("unregister instance [{}] for service :{}", instance, service);
-		HttpInvoker.httpPost(JSON.toJSONString(instance), servers + "/unreg?service=" + service.toPath(), InstanceMeta.class);
+		HttpInvoker.httpPost(JSON.toJSONString(instance), unregPath(service), InstanceMeta.class);
 		log.info("unregistered instance [{}] for service :{}", instance, service);
 		RENEWS.remove(instance, service);
 	}
@@ -118,9 +127,8 @@ public class CatRegistryCenter implements RegistryCenter {
 	@Override
 	public List<InstanceMeta> fetchAll(ServiceMeta service) {
 		log.info("fetchAll instances for service :{}", service);
-		List<InstanceMeta> instances = HttpInvoker.httpGet(servers + "/findAll?service=" + service.toPath(),
-				new TypeReference<List<InstanceMeta>>() {
-				});
+		List<InstanceMeta> instances = HttpInvoker.httpGet(findAllPath(service), new TypeReference<List<InstanceMeta>>() {
+		});
 		log.info("fetchAll instances :{}", instances);
 		return instances;
 	}
@@ -129,7 +137,7 @@ public class CatRegistryCenter implements RegistryCenter {
 	public void subscribe(ServiceMeta service, ChangedListener listener) {
 		consumerExecutor.scheduleWithFixedDelay(() -> {
 			Long localVersion = VERSIONS.getOrDefault(service.toPath(), -1L);
-			Long remoteVersion = HttpInvoker.httpGet(servers + "/version?service=" + service.toPath(), Long.class);
+			Long remoteVersion = HttpInvoker.httpGet(versionPath(service), Long.class);
 
 			log.info("subscribe get localVersion = {}, remoteVersion = {}", localVersion, remoteVersion);
 
@@ -141,5 +149,41 @@ public class CatRegistryCenter implements RegistryCenter {
 				VERSIONS.put(service.toPath(), remoteVersion);
 			}
 		}, 1, 5, TimeUnit.SECONDS);
+	}
+
+	private String regPath(ServiceMeta service) {
+		return path(REG_API_PATH, service);
+	}
+
+	private String unregPath(ServiceMeta service) {
+		return path(UNREG_API_PATH, service);
+	}
+
+	private String findAllPath(ServiceMeta service) {
+		return path(FINDALL_API_PATH, service);
+	}
+
+	private String versionPath(ServiceMeta service) {
+		return path(VERSION_API_PATH, service);
+	}
+
+	private String path(String apiPath, ServiceMeta service) {
+		return servers + apiPath + "?service=" + service.toPath();
+	}
+
+	private String renewsPath(List<ServiceMeta> serviceList) {
+		return path(RENEWS_API_PATH, serviceList);
+	}
+
+	private String path(String apiPath, List<ServiceMeta> serviceList) {
+		StringBuffer sb = new StringBuffer();
+		for (ServiceMeta service : serviceList) {
+			sb.append(service.toPath()).append(",");
+		}
+		String services = sb.toString();
+		if(services.endsWith(",")) {
+			services = services.substring(0, services.length() - 1);
+		}
+		return servers + apiPath + "?services=" + services;
 	}
 }
