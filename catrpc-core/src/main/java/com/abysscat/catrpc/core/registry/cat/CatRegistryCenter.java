@@ -16,9 +16,6 @@ import org.springframework.util.MultiValueMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * CatRegistryCenter implementation.
@@ -54,59 +51,53 @@ public class CatRegistryCenter implements RegistryCenter {
 	 * value: 服务对象
 	 */
 	private static final MultiValueMap<InstanceMeta, ServiceMeta> RENEWS = new LinkedMultiValueMap<>();
-	private ScheduledExecutorService consumerExecutor = null;
-	private ScheduledExecutorService producerExecutor = null;
+
+	/**
+	 * 注册中心定时任务调度器， 处理健康检查、服务发现等任务
+	 */
+	CatRegistryScheduler scheduler = new CatRegistryScheduler();
 
 	@Override
 	public void start() {
 		log.info("start catregistry server :{}", servers);
-		consumerExecutor = Executors.newScheduledThreadPool(1);
-		producerExecutor = Executors.newScheduledThreadPool(1);
 
-		// 定时向远程注册中心 server 端发送心跳
-		producerExecutor.scheduleAtFixedRate(() -> {
-			RENEWS.keySet().forEach(
-					instance -> {
-						StringBuffer stringBuffer = new StringBuffer();
-						List<ServiceMeta> serviceMetas = RENEWS.get(instance);
-						for (ServiceMeta service : serviceMetas) {
-							stringBuffer.append(service.toPath()).append(",");
-						}
-						String services = stringBuffer.toString();
-						if (services.endsWith(",")) {
-							services = services.substring(0, services.length() - 1);
-						}
-						Long timestamp = null;
-						try {
-							timestamp = HttpInvoker.httpPost(JSON.toJSONString(instance), renewsPath(serviceMetas), Long.class);
-						} catch (Exception e) {
-							log.error("renew instance {} for {} at {} failed", instance, services, timestamp);
-							return;
-						}
-						log.info("renew instance {} for {} at {} succeed", instance, services, timestamp);
-					}
-			);
-		}, 5, 5, TimeUnit.SECONDS);
+		scheduler.start();
+		scheduler.providerSchedule(this::heartbeat);
 	}
 
 	@Override
 	public void stop() {
 		log.info("stop catregistry server :{}", servers);
-		gracefulShutdown(consumerExecutor);
-		gracefulShutdown(producerExecutor);
+		scheduler.stop();
 	}
 
-	private void gracefulShutdown(ScheduledExecutorService executorService) {
-		executorService.shutdown();
-		try {
-			// 延迟关闭，给线程池执行中任务收尾时间
-			executorService.awaitTermination(1000, TimeUnit.MILLISECONDS);
-			if (!executorService.isTerminated()) {
-				executorService.shutdownNow();
-			}
-		} catch (InterruptedException ignored) {
-		}
+	/**
+	 * 向远程注册中心 server 端发送心跳
+	 */
+	public void heartbeat() {
+		RENEWS.keySet().forEach(
+				instance -> {
+					StringBuffer stringBuffer = new StringBuffer();
+					List<ServiceMeta> serviceMetas = RENEWS.get(instance);
+					for (ServiceMeta service : serviceMetas) {
+						stringBuffer.append(service.toPath()).append(",");
+					}
+					String services = stringBuffer.toString();
+					if (services.endsWith(",")) {
+						services = services.substring(0, services.length() - 1);
+					}
+					Long timestamp = null;
+					try {
+						timestamp = HttpInvoker.httpPost(JSON.toJSONString(instance), renewsPath(serviceMetas), Long.class);
+					} catch (Exception e) {
+						log.error("renew instance {} for {} at {} failed", instance, services, timestamp);
+						return;
+					}
+					log.info("renew instance {} for {} at {} succeed", instance, services, timestamp);
+				}
+		);
 	}
+
 
 	@Override
 	public void register(ServiceMeta service, InstanceMeta instance) {
@@ -135,7 +126,8 @@ public class CatRegistryCenter implements RegistryCenter {
 
 	@Override
 	public void subscribe(ServiceMeta service, ChangedListener listener) {
-		consumerExecutor.scheduleWithFixedDelay(() -> {
+		// 定时比对本地和远程版本，实现服务发现
+		scheduler.consumerSchedule(() -> {
 			Long localVersion = VERSIONS.getOrDefault(service.toPath(), -1L);
 			Long remoteVersion = HttpInvoker.httpGet(versionPath(service), Long.class);
 
@@ -148,7 +140,7 @@ public class CatRegistryCenter implements RegistryCenter {
 				// 只有在刷新列表并通知完成后，才更新本地版本号
 				VERSIONS.put(service.toPath(), remoteVersion);
 			}
-		}, 1, 5, TimeUnit.SECONDS);
+		});
 	}
 
 	private String regPath(ServiceMeta service) {
