@@ -26,6 +26,7 @@ catregistry:
 logging:
   level:
     root: info
+    com.abysscat: debug
     com.abysscat.catrpc: debug
 
 apollo:

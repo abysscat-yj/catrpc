@@ -28,3 +28,4 @@
 * provider端限流
 * 接入apollo配置中心
 * 接入自研注册中心catregistry
+* 接入自研配置中心catconfig

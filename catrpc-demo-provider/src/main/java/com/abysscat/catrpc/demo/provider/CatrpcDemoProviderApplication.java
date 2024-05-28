@@ -1,8 +1,8 @@
 package com.abysscat.catrpc.demo.provider;
 
+import com.abysscat.catconfig.client.annocation.EnableCatConfig;
 import com.abysscat.catrpc.core.api.RpcRequest;
 import com.abysscat.catrpc.core.api.RpcResponse;
-import com.abysscat.catrpc.core.config.ApolloChangedListener;
 import com.abysscat.catrpc.core.config.ProviderConfig;
 import com.abysscat.catrpc.core.config.ProviderProperties;
 import com.abysscat.catrpc.core.transport.SpringBootTransport;
@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @SpringBootApplication
 @RestController
 @Import({ProviderConfig.class})
+@EnableCatConfig
 @Slf4j
 public class CatrpcDemoProviderApplication {
 
@@ -34,13 +35,13 @@ public class CatrpcDemoProviderApplication {
         SpringApplication.run(CatrpcDemoProviderApplication.class, args);
     }
 
-    /**
-     * apollo配置监听器
-     */
-    @Bean
-    ApolloChangedListener listener(){
-        return new ApolloChangedListener();
-    }
+//    /**
+//     * apollo配置监听器
+//     */
+//    @Bean
+//    ApolloChangedListener listener(){
+//        return new ApolloChangedListener();
+//    }
 
     @Autowired
     SpringBootTransport transport;
